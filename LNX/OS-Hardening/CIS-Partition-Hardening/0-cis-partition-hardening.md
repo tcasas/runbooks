@@ -2,6 +2,30 @@
 
 **Applies to all jumpboxes after validating on all-vantls-m001.** Includes full training-wheels comments for safety and clarity, plus the critical dracut override so the keyfile is bundled into initramfs.
 
+---
+
+## Table of Contents
+- [Execution Checklist — Complete Before Step 0](#execution-checklist--complete-before-step-0)
+- [0 — Pre-Flight Verification (Ensures Environment Is Safe)](#0--pre-flight-verification-ensures-environment-is-safe)
+- [1 — Backup /var (Safety Net)](#1--backup-var-safety-net)
+- [2 — Boot into Rescue Mode Using the RHEL ISO](#2--boot-into-rescue-mode-using-the-rhel-iso)
+- [3 — Activate LVM Inside Rescue](#3--activate-lvm-inside-rescue)
+- [4 — Mount the Real Root Filesystem at /mnt/sysroot](#4--mount-the-real-root-filesystem-at-mntsysroot)
+- [5 — Create Mountpoints for the Encrypted Log Volumes](#5--create-mountpoints-for-the-encrypted-log-volumes)
+- [6 — Create the LUKS Keyfile (Critical for Boot Success)](#6--create-the-luks-keyfile-critical-for-boot-success)
+- [7 — luksFormat Both New Log LVs (Destructive by Design)](#7--luksformat-both-new-log-lvs-destructive-by-design)
+- [8 — Open the Encrypted Volumes](#8--open-the-encrypted-volumes)
+- [9 — Create XFS Filesystems Inside the Encrypted Volumes](#9--create-xfs-filesystems-inside-the-encrypted-volumes)
+- [10 — Mount the New Encrypted Filesystems](#10--mount-the-new-encrypted-filesystems)
+- [11 — Restore /var (Excluding Large Log and tmp Directories)](#11--restore-var-excluding-large-log-and-tmp-directories)
+- [12 — Update /etc/crypttab (Ensures Auto-Decryption at Boot)](#12--update-etccrypttab-ensures-auto-decryption-at-boot)
+- [13 — Update /etc/fstab (Remove Old Entries, Add Correct Ones)](#13--update-etcfstab-remove-old-entries-add-correct-ones)
+- [14 — Ensure dracut Includes the Keyfile in initramfs (Critical)](#14--ensure-dracut-includes-the-keyfile-in-initramfs-critical)
+- [15 — Mark for SELinux Relabel](#15--mark-for-selinux-relabel)
+- [16 — Cleanly Unmount and Reboot](#16--cleanly-unmount-and-reboot)
+
+---
+
 ## Execution Checklist — Complete Before Step 0
 - [ ] VM snapshot taken (disk only, no memory)
 - [ ] Rescue ISO available (RHEL 8.6 DVD)
