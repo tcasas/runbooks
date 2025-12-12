@@ -8,4 +8,4 @@ Welcome to the runbooks repository. Use this page to jump to the available guide
 ## Runbooks
 - [DNS](docs/dns/index.md)
 - [Cisco](docs/cisco/index.md)
-- [Linux OS Hardening](docs/lnx/index.md)
+- [Linux OS](docs/lnx/index.md)
