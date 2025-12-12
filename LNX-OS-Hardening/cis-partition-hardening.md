@@ -19,7 +19,18 @@ Run the following commands and validate the expectations:
 
 ```
 hostname                    # Ensure you're on the correct jumpbox
-getenforce                  # Should be "Permissive" before major FS changes (sudo setenforce 0)
+getenforce                  # Should be "Permissive" before major FS changes
+
+# If SELinux is Enforcing, SWITCH IT TO PERMISSIVE for the maintenance window:
+sudo setenforce 0              # Temporary runtime change (does NOT persist across reboot)
+getenforce                     # Should now show: Permissive ✔
+
+# NOTE:
+# We do NOT modify /etc/selinux/config yet.
+# It stays Enforcing, because after the new filesystem layout + relabel,
+# SELinux *should* come back in Enforcing mode automatically.
+# Step 15 will trigger a full SELinux relabel safely.
+
 df -h /var                  # MUST be <100GB used to shrink safely
 lsblk -f                    # Verify device → VG → LV layout
 pvs                         # Verify PVs and free space
