@@ -1,11 +1,7 @@
-# Runbooks Index
+# Runbooks
 
-Welcome to the runbooks repository. Use this page to jump to the available guides.
+Browse runbooks by category.
 
-## Getting Started
-- [Main test page](main.md)
-
-## Runbooks
-- [DNS](docs/dns/index.md)
-- [Cisco](docs/cisco/index.md)
-- [Linux OS](docs/lnx/index.md)
+- [DNS](dns/index.md)
+- [Cisco](cisco/index.md)
+- [Linux OS Hardening](lnx/index.md)
