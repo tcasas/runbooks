@@ -40,6 +40,11 @@ Clarify how Ansible CLI flags interact with SSH authentication variables and Vau
      ansible-vault create inventories/vantls/group_vars/vantls_jumpboxes/vault.yml \
        --vault-password-file ~/.ansible_vault_pass
      ```
+   - Edit the encrypted file later with the same vault password file:
+     ```bash
+     ansible-vault edit inventories/vantls/group_vars/vantls_jumpboxes/vault.yml \
+       --vault-password-file ~/.ansible_vault_pass
+     ```
    - Inside `vault.yml` (encrypted):
      ```yaml
      ansible_user: root
