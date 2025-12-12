@@ -1,6 +1,6 @@
 # Runbook: Configure systemd coredump storage to `none`
 
-This runbook explains how to apply the Red Hat Enterprise Linux hardening task that disables persistent coredump storage by setting `Storage=none` in `/etc/systemd/coredump.conf` via Ansible.
+This runbook explains how to apply the Red Hat Enterprise Linux hardening task that disables persistent coredump storage by setting `Storage=none` and limits coredump processing with `ProcessSizeMax=0` in `/etc/systemd/coredump.conf` via Ansible.
 
 ## Prerequisites
 - Control node has Ansible installed.
@@ -26,11 +26,11 @@ This runbook explains how to apply the Red Hat Enterprise Linux hardening task t
    - Append `--check` to either command above to preview changes without applying them.
 
 ## Verification
-- On the target host, confirm the setting:
+- On the target host, confirm the settings:
   ```bash
-  sudo grep '^Storage=none' /etc/systemd/coredump.conf
+  sudo grep -E '^(Storage=none|ProcessSizeMax=0)$' /etc/systemd/coredump.conf
   ```
-  The command should return `Storage=none` under the `[Coredump]` section. If the file is missing or the line is absent, re-run step 2.
+  The command should return both `Storage=none` and `ProcessSizeMax=0` under the `[Coredump]` section. If the file is missing or the lines are absent, re-run step 2.
 
 ## Troubleshooting
 - **Playbook fails due to missing Ansible modules**: Install Ansible on the control node (e.g., `pip install ansible`).
