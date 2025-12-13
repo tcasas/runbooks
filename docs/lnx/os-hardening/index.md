@@ -30,3 +30,7 @@ SSH hardening guides:
 CIS partition hardening walkthrough:
 
 - [CIS Partition Hardening Index](partition-hardening/index.md)
+
+Partition restore runbooks:
+
+- [Restore /var/var_clients from tar backup](partition-restore/restore-from-var-backups.tar.md)
