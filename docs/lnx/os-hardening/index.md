@@ -68,6 +68,7 @@ Each runbook below lists verification guidance and rollback references. Follow t
 ### SSH hardening guides
 | Runbook | Purpose | Playbook/Tag | Verification |
 | --- | --- | --- | --- |
+| [SSH Hardening Index](ssh-hardening/index.md) | Overview of SSH-related runbooks for this role. | `playbooks/lnx-os-hardening.yml` (`--tags ssh-hardening`) | Follow linked runbooks for specific verification steps. |
 | [SSH Authentication and Vault](ssh-hardening/ssh-auth-and-vault.md) | Secure SSH authentication methods and related secrets. | `playbooks/lnx-os-hardening.yml` (`--tags ssh-auth`) | Validate authentication paths and vault usage from runbook. |
 | [sshd ClientAliveInterval](ssh-hardening/sshd-clientaliveinterval.md) | Set idle timeout controls for SSH sessions. | `playbooks/lnx-os-hardening.yml` (`--tags ssh-clientaliveinterval`) | Confirm `ClientAliveInterval` values as described. |
 | [sshd IgnoreUserKnownHosts](ssh-hardening/sshd-ignoreuserknownhosts.md) | Configure host key checking behavior. | `playbooks/lnx-os-hardening.yml` (`--tags ssh-ignoreknownhosts`) | Check sshd configs and reload status per runbook. |
@@ -83,4 +84,5 @@ Each runbook below lists verification guidance and rollback references. Follow t
 ### Partition restore runbooks
 | Runbook | Purpose | Playbook/Tag | Verification |
 | --- | --- | --- | --- |
+| [Partition Restore Index](partition-restore/index.md) | Index of restore guides and recovery references. | `playbooks/lnx-os-hardening.yml` (`--tags partition-restore`) | Use linked guides for validation details. |
 | [Restore /var/var_clients from tar backup](partition-restore/restore-from-var-backups.tar.md) | Recover partition data from tar backups. | `playbooks/lnx-os-hardening.yml` (`--tags partition-restore`) | Follow restore validation steps in runbook to confirm recovery. |
