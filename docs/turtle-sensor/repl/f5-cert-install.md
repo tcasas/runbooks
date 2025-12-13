@@ -3,13 +3,13 @@
 This helper script streamlines one-off certificate installs against a BIG-IP CSSL profile. Use it to load test PEMs, verify device connectivity, and perform a single install.
 
 ## Files
-- `f5_cert_install.py`: REPL-friendly helper that prepares a certificate attachment, prints readiness checks, and can be run directly as a script.
+- `app/tests/repl/f5_cert_install.py`: REPL-friendly helper that prepares a certificate attachment, prints readiness checks, and can be run directly as a script.
 
-## Quickstart
-1. **Open a Python REPL** in the project environment.
-2. **Copy/paste** the contents of `f5_cert_install.py` or run it directly:
-   ```bash
-   python docs/turtle-sensor/repl/f5_cert_install.py
+## Quickstart (IPython)
+1. **Open IPython** in the project environment.
+2. **Run the helper** directly from IPython:
+   ```python
+   %run app/tests/repl/f5_cert_install.py
    ```
 3. **Fetch the target device**:
    ```python
