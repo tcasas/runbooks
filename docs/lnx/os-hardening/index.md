@@ -17,7 +17,10 @@ These runbooks document the Linux OS hardening role and its supporting tasks. Us
 Execute the entire hardening role:
 
 ```bash
-ansible-playbook -i <inventory> playbooks/lnx-os-hardening.yml
+ansible-playbook playbooks/lnx-os-hardening.yml \
+  -i inventories/vantls/hosts \
+  --limit all-vantls-m001 \
+  --vault-password-file ~/.ansible_vault_pass
 ```
 
 ### Targeted tags
@@ -25,10 +28,18 @@ Focus on specific controls using tags:
 
 ```bash
 # Run only SSH-related hardening
-ansible-playbook -i <inventory> playbooks/lnx-os-hardening.yml --tags "ssh-hardening"
+ansible-playbook playbooks/lnx-os-hardening.yml \
+  -i inventories/vantls/hosts \
+  --limit all-vantls-m001 \
+  --vault-password-file ~/.ansible_vault_pass \
+  --tags "ssh-hardening"
 
 # Apply multiple controls together
-ansible-playbook -i <inventory> playbooks/lnx-os-hardening.yml --tags "journald,sgid"
+ansible-playbook playbooks/lnx-os-hardening.yml \
+  -i inventories/vantls/hosts \
+  --limit all-vantls-m001 \
+  --vault-password-file ~/.ansible_vault_pass \
+  --tags "journald,sgid"
 ```
 
 ## Verification and rollback
