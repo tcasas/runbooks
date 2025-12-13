@@ -20,12 +20,12 @@ General hardening guides:
 
 SSH hardening guides:
 
-- [SSH Authentication and Vault](ssh-auth-and-vault.md)
-- [sshd ClientAliveInterval](sshd-clientaliveinterval.md)
-- [sshd IgnoreUserKnownHosts](sshd-ignoreuserknownhosts.md)
-- [sshd KexAlgorithms](sshd-kexalgorithms.md)
-- [sshd MACs](sshd-macs.md)
-- [sshd MaxAuthTries](sshd-maxauthtries.md)
+- [SSH Authentication and Vault](ssh-hardening/ssh-auth-and-vault.md)
+- [sshd ClientAliveInterval](ssh-hardening/sshd-clientaliveinterval.md)
+- [sshd IgnoreUserKnownHosts](ssh-hardening/sshd-ignoreuserknownhosts.md)
+- [sshd KexAlgorithms](ssh-hardening/sshd-kexalgorithms.md)
+- [sshd MACs](ssh-hardening/sshd-macs.md)
+- [sshd MaxAuthTries](ssh-hardening/sshd-maxauthtries.md)
 
 CIS partition hardening walkthrough:
 
