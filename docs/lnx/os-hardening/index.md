@@ -49,7 +49,7 @@ Each runbook below lists verification guidance and rollback references. Follow t
 ### General hardening guides
 | Runbook | Purpose | Playbook/Tag | Verification |
 | --- | --- | --- | --- |
-| [Ansible Vault](ansible-vault.md) | Manage secrets required for the hardening role. | `playbooks/lnx-os-hardening.yml` (`--tags ansible-vault`) | Validate vault access and variables per runbook steps. |
+| [Ansible Vault](../ansible/ansible-vault.md) | Manage secrets required for the hardening role. | `playbooks/lnx-os-hardening.yml` (`--tags ansible-vault`) | Validate vault access and variables per runbook steps. |
 | [Chronyd Options](chronyd-options.md) | Enforce Chrony configuration baselines. | `playbooks/lnx-os-hardening.yml` (`--tags chronyd`) | Check Chronyd status and config as described. |
 | [Coredump Storage](coredump-storage.md) | Control coredump handling and storage limits. | `playbooks/lnx-os-hardening.yml` (`--tags coredump`) | Confirm coredump settings and retention checks in runbook. |
 | [Cron Monthly Permissions](cron-monthly-permissions.md) | Ensure secure permissions on cron.monthly jobs. | `playbooks/lnx-os-hardening.yml` (`--tags cron-monthly`) | Revalidate permissions per runbook checklist. |
