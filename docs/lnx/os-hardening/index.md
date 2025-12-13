@@ -29,4 +29,4 @@ SSH hardening guides:
 
 CIS partition hardening walkthrough:
 
-- [CIS Partition Hardening Index](cis-partition-hardening/index.md)
+- [CIS Partition Hardening Index](partition-hardening/index.md)
