@@ -42,8 +42,8 @@ Use this runbook to confirm a certificate chains cleanly to trusted roots. It co
      # -servername: SNI value (usually the hostname)
      # -showcerts: print the full certificate chain the server presents
      openssl s_client \
-       -connect host:443 \
-       -servername host \
+       -connect www.example.com:443 \
+       -servername www.example.com \
        -showcerts \
        </dev/null 2>/dev/null \
        > endpoint_chain.txt
@@ -55,7 +55,11 @@ Use this runbook to confirm a certificate chains cleanly to trusted roots. It co
      # -connect: target host and port
      # -servername: SNI value
      # -verify_return_error: exit non-zero on verification failure instead of continuing
-     openssl s_client -connect host:443 -servername host -verify_return_error </dev/null
+     openssl s_client \
+       -connect www.example.com:443 \
+       -servername www.example.com \
+       -verify_return_error \
+       </dev/null
      ```
    - Verify the output includes `Verify return code: 0 (ok)` and no `hostname mismatch` warnings.
 
@@ -66,7 +70,12 @@ Use this runbook to confirm a certificate chains cleanly to trusted roots. It co
      # -servername: SNI value
      # -CAfile: custom trust bundle for verification
      # -verify_return_error: exit non-zero on verification failure
-     openssl s_client -connect host:443 -servername host -CAfile ca-bundle.pem -verify_return_error </dev/null
+     openssl s_client \
+       -connect www.example.com:443 \
+       -servername www.example.com \
+       -CAfile ca-bundle.pem \
+       -verify_return_error \
+       </dev/null
      ```
    - Confirm the verify return code is `0`. A code of `20` typically indicates a missing intermediate; `21` indicates an expiration problem.
 
