@@ -33,7 +33,7 @@ Use this runbook to validate the REPL-based certificate install helper (`app/tes
    ```python
    vars(f5cert.certfile)
    ```
-   - Verify `_cert_fingerprint_sha256` matches the expected PEM, `_scope_key_proposal` is prefixed with `fp:`, and `pending_state` is `ready_to_install`.
+   - Verify `_cert_fingerprint_sha256` matches the expected PEM, `_scope_key_proposal` is prefixed with `fp:`, and `pending_state` is `ready_to_install`. Use the [OpenSSL fingerprint verification runbook](../../lnx/openssl/verify-certificate-fingerprint.md) if you need to normalize or compare fingerprints.
 
 ## Evidence to capture
 - IPython console output showing device lookup, VIP resolution, and the `(True, "install complete")` tuple.
