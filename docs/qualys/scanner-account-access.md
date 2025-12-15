@@ -71,3 +71,7 @@ Choose one of the options below to restore scanner access while keeping the hard
 
 - Options 1 and 2 keep the hardening policy aligned for all other users.
 - Prefer key-based authentication when feasible to avoid future password aging events.
+
+### Can the host update the Qualys authentication record?
+
+No. The record that tells scanners which credential to use lives in the Qualys platform and must be updated there (via the UI or Qualys APIs). The Qualys Cloud Agent on the target host does not sync local password changes back to the scanner authentication record.
