@@ -52,18 +52,26 @@ Each runbook below lists verification guidance and rollback references. Follow t
 | [Ansible Vault](../ansible/ansible-vault.md) | Manage secrets required for the hardening role. | `playbooks/lnx-os-hardening.yml` (`--tags ansible-vault`) | Validate vault access and variables per runbook steps. |
 | [Chronyd Options](chronyd-options.md) | Enforce Chrony configuration baselines. | `playbooks/lnx-os-hardening.yml` (`--tags chronyd`) | Check Chronyd status and config as described. |
 | [Coredump Storage](coredump-storage.md) | Control coredump handling and storage limits. | `playbooks/lnx-os-hardening.yml` (`--tags coredump`) | Confirm coredump settings and retention checks in runbook. |
-| [Cron Monthly Permissions](cron-monthly-permissions.md) | Ensure secure permissions on cron.monthly jobs. | `playbooks/lnx-os-hardening.yml` (`--tags cron-monthly`) | Revalidate permissions per runbook checklist. |
 | [HTTPD Service](httpd-service.md) | Harden Apache service defaults. | `playbooks/lnx-os-hardening.yml` (`--tags httpd`) | Verify service state and configs outlined in runbook. |
 | [Journald Compression](journald-compress.md) | Configure journald compression policy. | `playbooks/lnx-os-hardening.yml` (`--tags journald-compress`) | Confirm journal rotation/compression behavior as noted. |
 | [Journald Storage](journald-storage.md) | Define journald storage location and limits. | `playbooks/lnx-os-hardening.yml` (`--tags journald-storage`) | Validate storage location and limits per runbook. |
-| [Password Maximum Age](password-max-age.md) | Enforce password expiry policies. | `playbooks/lnx-os-hardening.yml` (`--tags password-age`) | Check account password aging details as described. |
-| [SGID Files](sgid-files.md) | Audit and remediate SGID files. | `playbooks/lnx-os-hardening.yml` (`--tags sgid`) | Use runbook verification to confirm file ownership and permissions. |
-| [SUID Files](suid-files.md) | Audit and remediate SUID files. | `playbooks/lnx-os-hardening.yml` (`--tags suid`) | Follow runbook checks to validate file lists and remediation. |
-| [SUID/SGID Audit](suid-sgid-audit.md) | Perform combined SUID/SGID auditing. | `playbooks/lnx-os-hardening.yml` (`--tags suid-sgid-audit`) | Review audit output and reconcile deviations per runbook. |
 | [Systemd Journal Upload](systemd-journal-upload.md) | Configure journal upload settings. | `playbooks/lnx-os-hardening.yml` (`--tags journal-upload`) | Confirm upload targets and service status as documented. |
 | [Temporary /tmp Mount](tmp-mount.md) | Harden /tmp mount options. | `playbooks/lnx-os-hardening.yml` (`--tags tmp-mount`) | Verify mount flags and stability following runbook guidance. |
-| [Unowned Files](unowned-files.md) | Identify and correct unowned files. | `playbooks/lnx-os-hardening.yml` (`--tags unowned-files`) | Validate file ownership corrections per runbook. |
-| [World-Writable Files](world-writable-files.md) | Detect and remediate world-writable files. | `playbooks/lnx-os-hardening.yml` (`--tags world-writable`) | Confirm permissions and exceptions outlined in runbook. |
+
+### File hardening guides
+| Runbook | Purpose | Playbook/Tag | Verification |
+| --- | --- | --- | --- |
+| [Cron Monthly Permissions](file-hardening/cron-monthly-permissions.md) | Ensure secure permissions on cron.monthly jobs. | `playbooks/lnx-os-hardening.yml` (`--tags cron-monthly`) | Revalidate permissions per runbook checklist. |
+| [SGID Files](file-hardening/sgid-files.md) | Audit and remediate SGID files. | `playbooks/lnx-os-hardening.yml` (`--tags sgid`) | Use runbook verification to confirm file ownership and permissions. |
+| [SUID Files](file-hardening/suid-files.md) | Audit and remediate SUID files. | `playbooks/lnx-os-hardening.yml` (`--tags suid`) | Follow runbook checks to validate file lists and remediation. |
+| [SUID/SGID Audit](file-hardening/suid-sgid-audit.md) | Perform combined SUID/SGID auditing. | `playbooks/lnx-os-hardening.yml` (`--tags suid-sgid-audit`) | Review audit output and reconcile deviations per runbook. |
+| [Unowned Files](file-hardening/unowned-files.md) | Identify and correct unowned files. | `playbooks/lnx-os-hardening.yml` (`--tags unowned-files`) | Validate file ownership corrections per runbook. |
+| [World-Writable Files](file-hardening/world-writable-files.md) | Detect and remediate world-writable files. | `playbooks/lnx-os-hardening.yml` (`--tags world-writable`) | Confirm permissions and exceptions outlined in runbook. |
+
+### User hardening guides
+| Runbook | Purpose | Playbook/Tag | Verification |
+| --- | --- | --- | --- |
+| [Password Maximum Age](user-hardening/password-max-age.md) | Enforce password expiry policies. | `playbooks/lnx-os-hardening.yml` (`--tags password-age`) | Check account password aging details as described. |
 
 ### SSH hardening guides
 | Runbook | Purpose | Playbook/Tag | Verification |
