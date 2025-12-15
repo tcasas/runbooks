@@ -65,6 +65,12 @@ Choose one of the options below to restore scanner access while keeping the hard
 - The Qualys authentication record is updated to match the host credential (new password or SSH key).
 - A follow-up Qualys scan reports successful authentication.
 
+### How to confirm which account the scanner is using
+
+1. In the Qualys UI, open the authentication record tied to the target host (for example, in VMDR: **Scans → Authentication → Unix Records**). The **Login** field shows the username the scanner will attempt.
+2. If you manage records by API, call the Authentication Records endpoint to list the relevant entry and verify its configured login.
+3. On the host, review recent SSH logs (for example, `/var/log/auth.log` or `/var/log/secure`) for attempts from the scanner IP. The log entries include the username the scanner tried when authentication failed.
+
 ---
 
 ## Notes
