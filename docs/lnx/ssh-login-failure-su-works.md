@@ -9,7 +9,7 @@
 
 ---
 
-## Index: Confirm SSH Attempt Is Reaching Host
+## Confirm SSH Attempt Is Reaching Host
 
 1. **Watch SSH auth log live (most important)**
    - RHEL / Rocky / Alma: `tail -f /var/log/secure`
@@ -18,7 +18,7 @@
 
 ---
 
-## Index: Common SSH Policy Blocks
+## Common SSH Policy Blocks
 
 2. **Check sshd allow/deny rules**
    - Command: `grep -E "^(AllowUsers|DenyUsers|AllowGroups|DenyGroups)" /etc/ssh/sshd_config`
@@ -34,7 +34,7 @@
 
 ---
 
-## Index: Shell & Account Constraints (very common)
+## Shell & Account Constraints (very common)
 
 5. **Verify login shell**
    - Command: `getent passwd <user> | cut -d: -f7`
@@ -47,7 +47,7 @@
 
 ---
 
-## Index: SSH Key Authentication (if used)
+## SSH Key Authentication (if used)
 
 7. **Check `.ssh` permissions**
    - Commands:
@@ -63,7 +63,7 @@
 
 ---
 
-## Index: PAM + SSH Integration
+## PAM + SSH Integration
 
 8. **Check PAM sshd stack**
    - Command: `sed -n '1,200p' /etc/pam.d/sshd`
@@ -71,7 +71,7 @@
 
 ---
 
-## Index: SELinux (SSH-specific)
+## SELinux (SSH-specific)
 
 9. **Check SELinux denials**
    - Command: `ausearch -m AVC -ts recent | grep ssh`
@@ -82,7 +82,7 @@
 
 ---
 
-## Index: SSH Debug from Client (authoritative)
+## SSH Debug from Client (authoritative)
 
 10. **Collect SSH debug from client**
     - Command: `ssh -vvv <user>@<host>`
@@ -90,7 +90,7 @@
 
 ---
 
-## Index: Most Common Root Causes (ranked)
+## Most Common Root Causes (ranked)
 
 1. `DenyUsers` / `DenyGroups` in `sshd_config`.
 2. Shell set to `nologin` or not listed in `/etc/shells`.
