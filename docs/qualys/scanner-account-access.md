@@ -36,7 +36,8 @@ Choose one of the options below to restore scanner access while keeping the hard
 
        sudo chage -M 90 -W 7 <qualys_user>
 
-3. Re-run the Qualys scan to confirm authentication succeeds.
+3. Update the Qualys authentication record with the new password so the scanner uses the fresh credentials on the next run (for example, in VMDR: **Scans → Authentication → New/Edit Record → Password**).
+4. Re-run the Qualys scan to confirm authentication succeeds.
 
 ### Option 2 — Use Key-Only Authentication (Avoids Password Aging)
 
@@ -61,6 +62,7 @@ Choose one of the options below to restore scanner access while keeping the hard
 
 - Scanner account can authenticate via the intended method (password or SSH key).
 - `/etc/shadow` shows either a non-expired password entry or a locked password for the Qualys account.
+- The Qualys authentication record is updated to match the host credential (new password or SSH key).
 - A follow-up Qualys scan reports successful authentication.
 
 ---
