@@ -20,6 +20,12 @@ An OS-hardening role enforces maximum password age on every account with an acti
 
 The hardening task loops over `/etc/shadow` entries and applies these values to every user that has an active hash. The Qualys service account password likely expired after the hardening run.
 
+### Where is the maximum password age enforced?
+
+- `/etc/login.defs` is templated to set `PASS_MAX_DAYS` (defaults to 90) as the global maximum.
+- The hardening role also runs `password_expire_max` against each `/etc/shadow` entry that has an active hash to ensure every user matches the policy.
+- See the [maximum password age runbook](../lnx/os-hardening/password-max-age.md) for the end-to-end control and verification steps.
+
 ---
 
 ## Recovery Options
@@ -55,6 +61,23 @@ Choose one of the options below to restore scanner access while keeping the hard
        password_users: "{{ password_users | difference(['qualys']) }}"
 
 2. Document the exception so it can be revisited after scanner access is restored.
+
+### If the scanner uses a domain account (not in `/etc/shadow`)
+
+Some hardened baselines also tighten SSH and PAM controls for centrally managed accounts. If your scanner authenticates with a domain user (for example, through SSSD/LDAP) and is now blocked:
+
+1. Confirm the account and group mappings resolve correctly:
+
+       id <domain_user>
+
+2. Review recent hardening changes to SSH restrictions and ensure the domain account (or its group) is permitted:
+   - `AllowUsers` / `AllowGroups` in `/etc/ssh/sshd_config`
+   - `sssd.conf` access controls (for example, `simple_allow_groups` / `simple_allow_users`)
+3. Check PAM access rules that may have started denying the scanner:
+   - `/etc/security/access.conf` (often driven by `pam_access`)
+   - `/etc/pam.d/sshd` for new modules such as `pam_access` or `pam_faillock`
+4. Add the scanner account or a dedicated group to the approved lists, then restart SSH if `sshd_config` was updated.
+5. Re-run the scan to confirm authentication now succeeds.
 
 ---
 
