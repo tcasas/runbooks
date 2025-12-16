@@ -8,3 +8,4 @@ Welcome to the runbooks repository. Use this page to jump to the available guide
 - [Linux OS](lnx/index.md)
 - [Qualys](qualys/index.md)
 - [Turtle Sensor](turtle-sensor/index.md)
+- [OTX](otx/index.md)
