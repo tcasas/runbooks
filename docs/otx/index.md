@@ -1,3 +1,3 @@
 # OTX Runbooks
 
-- [Access Requests](request-domain-validation.md)
+- [Access Requests](access-request.md)
