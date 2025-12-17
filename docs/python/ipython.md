@@ -47,6 +47,12 @@ Use this runbook to install IPython, launch sessions, and lean on core features 
   - `%rerun 12-15` re-executes commands 12 through 15.
 - Quick variables:
   - `_` last result, `__` second-to-last, `_i` last input, `_ih` full history list.
+- Paste blocks safely:
+  - `cpaste` enters a paste-friendly mode for indented code:
+    ```python
+    %cpaste
+    # paste code here, then press Ctrl-D
+    ```
 
 ## Handy magic commands
 - `%run script.py`: Execute a local script in the current namespace.
@@ -59,6 +65,15 @@ Use this runbook to install IPython, launch sessions, and lean on core features 
 - `%who` / `%whos`: Show variables in scope.
 - `%store var_name`: Persist a variable between sessions; retrieve with `%store -r`.
 - `!command`: Run shell commands. Example: `!ls -l data/`.
+- `%env`: View or set environment variables. Examples:
+  ```python
+  %env
+  %env MY_FLAG=1
+  ```
+- `%load`: Pull code from a URL or local file directly into the session:
+  ```python
+  %load https://raw.githubusercontent.com/pallets/flask/main/src/flask/__init__.py
+  ```
 
 ## Debugging and tracing
 - Start the built-in debugger at an exception:
@@ -72,6 +87,11 @@ Use this runbook to install IPython, launch sessions, and lean on core features 
 - Trace a single statement and its execution:
   ```python
   %prun my_func()
+  ```
+- Profile line-by-line to find hot spots:
+  ```python
+  %load_ext line_profiler
+  %lprun -f my_func my_func()
   ```
 
 ## Working with notebooks
@@ -107,3 +127,13 @@ Use this runbook to install IPython, launch sessions, and lean on core features 
 - Keep a startup script in `~/.ipython/profile_default/startup/` for imports you always use (for example, `import pathlib as P`).
 - Combine shell and Python: `files = !ls *.py` returns a list you can iterate over.
 - Keep sessions reproducible: record key commands with `%history -g > notes.txt`.
+- Store and reuse snippets with `%alias` and `%macro`:
+  ```python
+  %alias ll ls -l
+  %macro load_data 3-6  # saves inputs 3-6 to reuse later
+  ```
+- Capture and reuse stdout:
+  ```python
+  output = !python script.py
+  print(output.n)  # line count
+  ```
