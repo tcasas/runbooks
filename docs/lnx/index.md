@@ -3,7 +3,7 @@
 - [Ansible](ansible/index.md)
 - [Git](git/index.md)
 - [OpenSSL](openssl/index.md)
-- [Linux User Login Failure](linux-user-login-failure.md)
+- [User Login Failure](user-login-failure.md)
 - [SSH Login Failure — `su` Works but SSH Fails](ssh-login-failure-su-works.md)
 - [B7 Command Not Found — Login Noise Debug](login-noise-debug.md)
 - [Netcat Usage](netcat-usage.md)
