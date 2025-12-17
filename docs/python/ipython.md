@@ -2,6 +2,17 @@
 
 Use this runbook to install IPython, launch sessions, and lean on core features for fast Python exploration.
 
+## Table of contents
+- [Prerequisites](#prerequisites)
+- [Install IPython](#install-ipython)
+- [Launch a session](#launch-a-session)
+- [Session essentials](#session-essentials)
+- [Handy magic commands](#handy-magic-commands)
+- [Debugging and tracing](#debugging-and-tracing)
+- [Working with notebooks](#working-with-notebooks)
+- [Configure IPython](#configure-ipython)
+- [Tips for productivity](#tips-for-productivity)
+
 ## Prerequisites
 - Python 3.8+ installed.
 - Access to a virtual environment (recommended for project work).
