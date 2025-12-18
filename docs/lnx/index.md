@@ -14,3 +14,4 @@
 - [`git`](git/index.md) — Source control workflows and repository management.
 - [`netcat` Usage](netcat-usage.md) — Common `nc` patterns for connectivity checks and transfers.
 - [`openssl`](openssl/index.md) — Certificate verification and crypto utilities.
+- [`ripgrep` Runbook](ripgrep-runbook.md) — Fast, recursive text search tips (`rg`).
