@@ -51,6 +51,37 @@ Expected:
 - State file created/updated.
 - Steps run in order (or resumed).
 
+Quick usage examples (mirrors the script docstring):
+```bash
+# Run the full workflow, resuming from the default state file if it exists
+python -m app.tests.repl.cert_workflow
+
+# List known CertFile scope keys with context
+python -m app.tests.repl.cert_workflow --list-scope-keys
+
+# Force a fresh run from the beginning and store progress in a custom location
+python -m app.tests.repl.cert_workflow --no-resume --state-file /tmp/cert_state.json
+
+# Start at load_by_scope_key with explicit inputs for the CertFile hydration step
+python -m app.tests.repl.cert_workflow --start-from exercise_load_by_scope_key \
+  --scope-key your_scope_key_here --controller-name your_controller
+
+# Override issuance settings while pausing between steps
+python -m app.tests.repl.cert_workflow --pause --device my-f5 --cn example.com \
+  --workflow-mode CSR_ISSUE_INSTALL --subject-city "New York"
+
+# Inspect the sequence without executing anything
+python -m app.tests.repl.cert_workflow --list-steps
+
+# Resume a stopped run using a saved state and skip straight to installation
+python -m app.tests.repl.cert_workflow --state-file /tmp/cert_state.json \
+  --start-from install_f5_cert --device f5-ltm-01 --cn api.example.com
+
+# Run only the GCP install stage with regional proxy overrides
+python -m app.tests.repl.cert_workflow --no-resume --start-from install_gcp_cert \
+  --project-id my-gcp-project --region us-west1 --proxy-name example-proxy
+```
+
 
 ## Inspect (No Execution)
 
@@ -75,6 +106,7 @@ Behavior:
 - When `--controller-name` is provided, switches to eager load for that controller.
 - Prints per-controller sections with scope key, CN, and expiry.
 - Returns exit code 1 if CertFiles retrieval fails.
+- Prints `No CertFiles found.` when the collection is empty.
 
 
 ## State File Behavior
@@ -91,13 +123,13 @@ Defaults to a local file in the current working directory (relative path):
 
 ### Force a fresh run (ignore any existing progress)
 ```bash
-python -m app.tests.repl.cert_workflow --resume=false
+python -m app.tests.repl.cert_workflow --no-resume
 ```
 Expected: starts at `issue_sectigo_cert` regardless of saved state.
 
 ### Use a custom state file path
 ```bash
-python -m app.tests.repl.cert_workflow --resume=false --state-file /tmp/cert_state.json
+python -m app.tests.repl.cert_workflow --no-resume --state-file /tmp/cert_state.json
 ```
 Expected: state created/updated at `/tmp/cert_state.json`; parent directory created if missing.
 
@@ -176,7 +208,7 @@ raise SystemExit("--scope-key is required ...")
 --cssl-prof <profile>      # default issue_sectigo_cert.CSSL_PROF
 --project-id <id>          # default issue_sectigo_cert.PROJECT_ID
 --cn <common-name>         # default issue_sectigo_cert.CN
---san "<san1,san2 ...>"    # passed through to CSR inputs
+--san "<san1 san2,...>"    # comma/space separated SANs passed through to CSR inputs
 --workflow-mode <mode>     # choices: issue_sectigo_cert.MODE_CHOICES
 --csr-policy <name>
 --subject-country <val>
@@ -217,14 +249,14 @@ Expected: if state exists and `last_completed` set, resumes at next step; otherw
 
 ### Pattern B — Fresh run + custom state file
 ```bash
-python -m app.tests.repl.cert_workflow --resume=false --state-file /tmp/cert_state.json
+python -m app.tests.repl.cert_workflow --no-resume --state-file /tmp/cert_state.json
 ```
 Expected: starts from `issue_sectigo_cert`; writes progress to `/tmp/cert_state.json`.
 
 ### Pattern C — Run ONLY CertFile hydration (controller lookup)
 ```bash
 python -m app.tests.repl.cert_workflow \
-  --resume=false \
+  --no-resume \
   --start-from exercise_load_by_scope_key \
   --scope-key <scope_key> \
   --controller-name <controller>
@@ -246,7 +278,7 @@ Expected: runs `install_f5_cert` (and then `install_gcp_cert` unless stopped).
 ### Pattern E — GCP-only install with regional proxy overrides
 ```bash
 python -m app.tests.repl.cert_workflow \
-  --resume=false \
+  --no-resume \
   --start-from install_gcp_cert \
   --project-id my-gcp-project \
   --region us-west1 \
