@@ -7,6 +7,7 @@
 - Persists progress to a JSON state file so you can safely stop/resume between steps.
 - Supports:
   - listing steps (no execution)
+  - listing CertFile scope keys with context (no execution)
   - starting from any step
   - pausing between steps
   - overriding issuance/install inputs via CLI flags
@@ -63,6 +64,17 @@ Expected:
 - `exercise_load_by_scope_key`: Hydrate a CertFile via `load_by_scope_key()`.
 - `install_f5_cert`: Install certificate to F5 using REPL helper.
 - `install_gcp_cert`: Install certificate to GCP using REPL helper.
+
+List known CertFile scope keys (no execution):
+```bash
+python -m app.tests.repl.cert_workflow --list-scope-keys
+```
+
+Behavior:
+- Queries `CertFiles().get_all(lazy_load=True, reset_items=True)`.
+- When `--controller-name` is provided, switches to eager load for that controller.
+- Prints per-controller sections with scope key, CN, and expiry.
+- Returns exit code 1 if CertFiles retrieval fails.
 
 
 ## State File Behavior
@@ -144,6 +156,7 @@ Behavior:
 --start-from <step>
 --pause
 --list-steps
+--list-scope-keys
 ```
 
 ### CertFile hydration flags (`exercise_load_by_scope_key`)
