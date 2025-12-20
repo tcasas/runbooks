@@ -41,18 +41,23 @@ export NO_PROXY_LIST="localhost,127.0.0.1,.corp.example.com"
 ### Install packages and validate baseline
 
 ```bash
+# Install required base packages
 sudo dnf -y install podman jq curl ca-certificates ripgrep
 > Complete!
 
+# Confirm Podman version
 podman --version
 > podman version X.Y.Z
 
+# Confirm systemd version
 systemctl --version | head -n 1
 > systemd ...
 
+# Ensure SELinux is enforcing
 getenforce
 > Enforcing
 
+# Confirm time sync status
 timedatectl status | rg -n "System clock synchronized|NTP service|Time zone" || true
 > System clock synchronized: yes
 > NTP service: active
@@ -105,6 +110,7 @@ sudo update-ca-trust
 ### Validate CA (Harbor TLS)
 
 ```bash
+# Confirm Harbor certificate trust
 openssl s_client -connect "${HARBOR_FQDN}:443" -servername "${HARBOR_FQDN}" </dev/null 2>/dev/null | rg "Verify return code|subject=|issuer="
 > Verify return code: 0 (ok)
 ```
@@ -114,12 +120,15 @@ openssl s_client -connect "${HARBOR_FQDN}:443" -servername "${HARBOR_FQDN}" </de
 ### Login and pull
 
 ```bash
+# Authenticate to the Harbor registry
 podman login "${HARBOR_FQDN}"
 > Login Succeeded!
 
+# Pull the requested image tag
 podman pull "${IMAGE}"
 > ... pulled ...
 
+# Inspect images to confirm pull
 podman images | head
 > REPOSITORY ... TAG ... IMAGE ID ... CREATED ... SIZE
 ```
@@ -144,6 +153,7 @@ export IMAGE_REF="${IMAGE_DIGEST}"
 ### `/etc/turtle/sensor.env`
 
 ```bash
+# Create the env file with required defaults
 sudo tee "${ENV_FILE}" >/dev/null <<'EOF'
 # Turtle-Sensor runtime config
 
@@ -173,16 +183,19 @@ SENSOR_MODE=run
 EOF
 > wrote
 
+# Inject proxy values into the env file
 sudo sed -i \
   -e "s|__HTTPS_PROXY_URL__|${HTTPS_PROXY_URL}|g" \
   -e "s|__NO_PROXY_LIST__|${NO_PROXY_LIST}|g" \
   "${ENV_FILE}"
 > updated
 
+# Lock down permissions on the env file
 sudo chmod 0640 "${ENV_FILE}"
 sudo chown root:root "${ENV_FILE}"
 > secured
 
+# Sanity-check key variables
 sudo rg -n "CONTROLLER_|REQUESTS_CA_BUNDLE|HTTPS_PROXY|NO_PROXY|OTX_ROOT|SENSOR_|LOG_LEVEL|SENSOR_MODE" "${ENV_FILE}"
 > ... shows configured values ...
 ```
@@ -192,9 +205,11 @@ sudo rg -n "CONTROLLER_|REQUESTS_CA_BUNDLE|HTTPS_PROXY|NO_PROXY|OTX_ROOT|SENSOR_
 ### Podman create (journald logging, SELinux-safe mounts)
 
 ```bash
+# Remove any existing container to avoid conflicts
 sudo podman rm -f "${SVC}" 2>/dev/null || true
 > removed (or none)
 
+# Create (or replace) the container with pinned image and mounts
 sudo podman create \
   --name "${SVC}" \
   --replace \
@@ -204,6 +219,7 @@ sudo podman create \
   "${IMAGE_REF}"
 > container created
 
+# Verify container state
 sudo podman ps -a --filter "name=${SVC}"
 > ... STATUS: Created
 ```
@@ -213,6 +229,7 @@ sudo podman ps -a --filter "name=${SVC}"
 ### Generate unit and enable service
 
 ```bash
+# Generate the systemd unit from the container definition
 sudo podman generate systemd \
   --new \
   --name "${SVC}" \
@@ -223,6 +240,7 @@ sudo podman generate systemd \
 sudo install -d -m 0755 "/etc/systemd/system/${SVC}.service.d"
 > created
 
+# Apply hardening overrides
 sudo tee "/etc/systemd/system/${SVC}.service.d/10-hardening.conf" >/dev/null <<'EOF'
 [Service]
 Restart=on-failure
@@ -234,9 +252,11 @@ ProtectSystem=strict
 EOF
 > wrote drop-in
 
+# Reload units to pick up changes
 sudo systemctl daemon-reload
 > reloaded
 
+# Enable and start the service
 sudo systemctl enable --now "${SVC}.service"
 > enabled
 > started
@@ -247,15 +267,19 @@ sudo systemctl enable --now "${SVC}.service"
 ### Service, logs, container state, and environment
 
 ```bash
+# Check active state
 systemctl status "${SVC}.service" --no-pager
 > Active: active (running)
 
+# Review recent logs
 journalctl -u "${SVC}.service" -n 200 --no-pager
 > ... startup logs (no TLS/CA errors) ...
 
+# Confirm container is running
 podman ps --filter "name=${SVC}"
 > ... STATUS: Up ...
 
+# Verify environment variables inside the container
 podman exec "${SVC}" /bin/bash -lc 'env | rg "SENSOR_|OTX_ROOT|LOG_LEVEL|HTTPS_PROXY|NO_PROXY|CONTROLLER_" | sort'
 > ... expected vars present ...
 ```
@@ -291,6 +315,7 @@ sudo podman create \
 sudo systemctl restart "${SVC}.service"
 > restarted
 
+# Show current container status and pinned image
 sudo podman ps --filter "name=${SVC}" --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"
 > turtle-sensor  HARBOR_FQDN/turtle/sensor@sha256:...  Up ...
 ```
