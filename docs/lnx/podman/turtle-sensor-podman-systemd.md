@@ -1,13 +1,17 @@
 # Turtle-Sensor Podman + systemd Deployment (Production-Ready)
-# Target: Hardened RHEL 9
-# Goal: Deploy Turtle-Sensor as a Podman-managed systemd service with secure defaults, deterministic upgrades, and clean ops.
-#
-# Replace ALL_CAPS values before running.
-# Expected outputs are prefixed with ">" on each line (diff-friendly).
 
-## Index: 0) Variables (set once per host)
+**Target:** Hardened RHEL 9
 
-### Registry / image / service
+**Goal:** Deploy Turtle-Sensor as a Podman-managed systemd service with secure defaults, deterministic upgrades, and clean operations.
+
+**Conventions:**
+
+- Replace `ALL_CAPS` placeholders before running commands.
+- Expected outputs are prefixed with `>` for quick diffing.
+
+## 1) Set variables (per host)
+
+### Registry, image, and service
 
 ```bash
 # Harbor registry + image
@@ -32,9 +36,9 @@ export HTTPS_PROXY_URL="http://PROXY_HOST:PROXY_PORT"
 export NO_PROXY_LIST="localhost,127.0.0.1,.corp.example.com"
 ```
 
-## Index: 1) Prerequisites
+## 2) Prerequisites
 
-### Packages + baseline checks
+### Install packages and validate baseline
 
 ```bash
 sudo dnf -y install podman jq curl ca-certificates ripgrep
@@ -54,9 +58,9 @@ timedatectl status | rg -n "System clock synchronized|NTP service|Time zone" || 
 > NTP service: active
 ```
 
-## Index: 2) Directory layout
+## 3) Directory layout
 
-### /etc + /opt
+### Prepare `/etc` and `/opt`
 
 ```bash
 sudo install -d -m 0750 -o root -g root "${ETC_DIR}"
@@ -75,7 +79,7 @@ ls -ald "${ETC_DIR}" "${OTX_ROOT}" "${LOG_DIR}" "${DATA_DIR}"
 > drwxr-xr-x root root ... /opt/otxapps/turtle-sensor/data
 ```
 
-## Index: 3) CA trust configuration
+## 4) CA trust configuration
 
 ### Option A (preferred): system trust store
 
@@ -105,9 +109,9 @@ openssl s_client -connect "${HARBOR_FQDN}:443" -servername "${HARBOR_FQDN}" </de
 > Verify return code: 0 (ok)
 ```
 
-## Index: 4) Registry authentication
+## 5) Registry authentication
 
-### Login + pull
+### Login and pull
 
 ```bash
 podman login "${HARBOR_FQDN}"
@@ -120,7 +124,7 @@ podman images | head
 > REPOSITORY ... TAG ... IMAGE ID ... CREATED ... SIZE
 ```
 
-## Index: 5) (Recommended) Pin deployment to a digest
+## 6) (Recommended) Pin deployment to a digest
 
 ### Deterministic image reference
 
@@ -135,9 +139,9 @@ echo "${IMAGE_DIGEST}"
 export IMAGE_REF="${IMAGE_DIGEST}"
 ```
 
-## Index: 6) Environment file
+## 7) Environment file
 
-### /etc/turtle/sensor.env
+### `/etc/turtle/sensor.env`
 
 ```bash
 sudo tee "${ENV_FILE}" >/dev/null <<'EOF'
@@ -183,7 +187,7 @@ sudo rg -n "CONTROLLER_|REQUESTS_CA_BUNDLE|HTTPS_PROXY|NO_PROXY|OTX_ROOT|SENSOR_
 > ... shows configured values ...
 ```
 
-## Index: 7) Create (or replace) the container
+## 8) Create (or replace) the container
 
 ### Podman create (journald logging, SELinux-safe mounts)
 
@@ -204,9 +208,9 @@ sudo podman ps -a --filter "name=${SVC}"
 > ... STATUS: Created
 ```
 
-## Index: 8) Generate & install systemd unit
+## 9) Generate and install systemd unit
 
-### Generate unit + enable service
+### Generate unit and enable service
 
 ```bash
 sudo podman generate systemd \
@@ -238,9 +242,9 @@ sudo systemctl enable --now "${SVC}.service"
 > started
 ```
 
-## Index: 9) Verification
+## 10) Verification
 
-### Service, logs, container state, env
+### Service, logs, container state, and environment
 
 ```bash
 systemctl status "${SVC}.service" --no-pager
@@ -256,7 +260,7 @@ podman exec "${SVC}" /bin/bash -lc 'env | rg "SENSOR_|OTX_ROOT|LOG_LEVEL|HTTPS_P
 > ... expected vars present ...
 ```
 
-## Index: 10) Upgrade procedure (safe)
+## 11) Upgrade procedure (safe)
 
 ### Pull (tag) → repin (digest) → recreate → restart
 
@@ -291,9 +295,9 @@ sudo podman ps --filter "name=${SVC}" --format "table {{.Names}}\t{{.Image}}\t{{
 > turtle-sensor  HARBOR_FQDN/turtle/sensor@sha256:...  Up ...
 ```
 
-## Index: 11) Rollback procedure (two options)
+## 12) Rollback procedure (two options)
 
-### Option A: Podman rollback (if supported / configured)
+### Option A: Podman rollback (if supported/configured)
 
 ```bash
 sudo podman rollback "${SVC}" || true
@@ -311,9 +315,9 @@ sudo systemctl restart "${SVC}.service"
 # then run the same recreate + restart steps from Index: 10.
 ```
 
-## Index: 12) Uninstall / cleanup
+## 13) Uninstall / cleanup
 
-### Remove service + container (keeps /opt/otxapps data unless you delete it)
+### Remove service and container (keeps `/opt/otxapps` data unless you delete it)
 
 ```bash
 sudo systemctl disable --now "${SVC}.service" 2>/dev/null || true
@@ -332,7 +336,7 @@ sudo podman rm -f "${SVC}" 2>/dev/null || true
 # sudo update-ca-trust
 ```
 
-## Index: 13) Operator checklist
+## 14) Operator checklist
 
 ### Before / After
 
