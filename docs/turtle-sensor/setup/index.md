@@ -1,3 +1,4 @@
 # Turtle-Sensor Setup Guides
 
-- [Podman + systemd deployment on RHEL 9 (single copy/paste block)](../../lnx/podman/turtle-sensor-podman-systemd.md)
+- [Podman + systemd deployment on RHEL 9 (Model-A: systemd owns container)](../../lnx/podman/turtle-sensor-podman-systemd-model-a.md)
+- [Podman + systemd deployment on RHEL 9 (Model-B: operator creates container)](../../lnx/podman/turtle-sensor-podman-systemd.md)
