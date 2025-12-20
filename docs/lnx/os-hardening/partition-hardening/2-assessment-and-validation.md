@@ -1,3 +1,5 @@
+[Runbooks Index](../../../index.md) / [Linux](../../index.md) / [OS Hardening](../index.md) / [Partition Hardening](index.md)
+
 # System Running State = DEGRADED — Assessment & Validation Runbook
 
 **Host:** `all-vantls-m001`

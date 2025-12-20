@@ -1,3 +1,5 @@
+[Runbooks Index](../index.md) / [DNS](index.md)
+
 # DNS Search List — Linux Resolution Behavior Runbook
 
 ## Purpose

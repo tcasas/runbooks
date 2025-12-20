@@ -1,3 +1,5 @@
+[Runbooks Index](../../../index.md) / [Linux](../../index.md) / [OS Hardening](../index.md) / [Partition Hardening](index.md)
+
 # CIS Post-Hardening Verification Runbook (RHEL 8 Jumpboxes)
 
 ## Purpose

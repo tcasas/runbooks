@@ -1,3 +1,5 @@
+[Runbooks Index](../index.md) / [Linux](index.md)
+
 # Linux Runbooks
 
 ## Tools and configurations

@@ -1,3 +1,5 @@
+[Runbooks Index](../../index.md) / [Linux](../index.md) / [Git](index.md)
+
 # Managing Local Git Repositories
 
 Use these procedures to create, update, and troubleshoot local Git repositories on Linux workstations.

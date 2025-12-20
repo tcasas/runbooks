@@ -1,3 +1,5 @@
+[Runbooks Index](../../index.md) / [Linux](../index.md) / [OS Hardening](index.md)
+
 # Runbook: Enable and configure `systemd-journal-upload`
 
 ## Purpose

@@ -1,3 +1,5 @@
+[Runbooks Index](../../../index.md) / [Linux](../../index.md) / [OS Hardening](../index.md) / [Partition Hardening](index.md)
+
 # nginx.service FAILED — Missing Log Directory After CIS /var Hardening
 **Host:** all-vantls-m001
 

@@ -1,3 +1,5 @@
+[Runbooks Index](../../../index.md) / [Linux](../../index.md) / [OS Hardening](../index.md) / [SSH Hardening](index.md)
+
 # Runbook: SSH authentication and Vault usage in Ansible
 
 ## Purpose

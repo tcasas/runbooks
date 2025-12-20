@@ -1,3 +1,5 @@
+[Runbooks Index](../../index.md) / [Linux](../index.md) / [Podman](index.md)
+
 # Turtle-Sensor Podman + systemd Deployment (Model-A: systemd Owns Container)
 
 **Model-A:** `systemd` creates and manages the container lifecycle. There is **no** persistent named container created manually; all container settings live in the unit file.

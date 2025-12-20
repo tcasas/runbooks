@@ -1,3 +1,5 @@
+[Runbooks Index](../../../index.md) / [Linux](../../index.md) / [OS Hardening](../index.md) / [SSH Hardening](index.md)
+
 # SSH Hardening Runbooks
 
 - [SSH Authentication and Vault](ssh-auth-and-vault.md)

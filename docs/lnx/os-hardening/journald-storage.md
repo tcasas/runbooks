@@ -1,3 +1,5 @@
+[Runbooks Index](../../index.md) / [Linux](../index.md) / [OS Hardening](index.md)
+
 # Runbook: Ensure journald storage is configured
 
 ## Purpose

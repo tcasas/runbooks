@@ -1,3 +1,5 @@
+[Runbooks Index](../index.md) / [Linux](index.md)
+
 # Login Noise Debug — Escape-sequence noise (e.g., B7)
 
 ## How to use this guide

@@ -1,3 +1,5 @@
+[Runbooks Index](../../index.md) / [Linux](../index.md) / [OpenSSL](index.md)
+
 # Verify certificate chain
 
 Use this runbook to confirm a certificate chains cleanly to trusted roots. It covers local PEM validation and remote endpoint checks to spot missing intermediates or hostname issues.

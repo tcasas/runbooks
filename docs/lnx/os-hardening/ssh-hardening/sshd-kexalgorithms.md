@@ -1,3 +1,5 @@
+[Runbooks Index](../../../index.md) / [Linux](../../index.md) / [OS Hardening](../index.md) / [SSH Hardening](index.md)
+
 # Runbook: Configure SSH daemon key exchange (KexAlgorithms)
 
 ## Purpose
