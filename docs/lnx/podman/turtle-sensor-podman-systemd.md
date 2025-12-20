@@ -1,159 +1,172 @@
-# Turtle-Sensor Podman + systemd Deployment (Production-Ready)
+# Turtle-Sensor Podman + systemd Deployment (Model-B + Digest Recording)
 
-**Target:** Hardened RHEL 9
+**Model-B:** Operator creates or replaces the named container. Systemd only starts/stops that container—no container creation inside the unit.
 
-**Goal:** Deploy Turtle-Sensor as a Podman-managed systemd service with secure defaults, deterministic upgrades, and clean operations.
+**Target:** Hardened RHEL (rootful Podman).
 
 **Conventions:**
 
 - Replace `ALL_CAPS` placeholders before running commands.
 - Expected outputs are prefixed with `>` for quick diffing.
+- All Podman commands use `sudo` to keep the rootful store consistent.
 
-## 1) Set variables (per host)
-
-### Registry, image, and service
+## 0) Set variables (per host)
 
 ```bash
-# Harbor registry + image
+# Harbor registry + image coordinates
 export HARBOR_FQDN="HARBOR_FQDN_OR_VIP"
 export IMAGE_REPO="turtle/sensor"
-export IMAGE_TAG="prod"                # prod | staging | specific tag
+export IMAGE_TAG="prod"                 # prod | staging | specific tag
 export IMAGE="${HARBOR_FQDN}/${IMAGE_REPO}:${IMAGE_TAG}"
 
-# Names
+# Service/container name (must be consistent everywhere)
 export SVC="turtle-sensor"
 
-# Layout (per your standard)
+# Host paths (per your standard)
 export ETC_DIR="/etc/turtle"
 export ENV_FILE="${ETC_DIR}/sensor.env"
 export OTX_ROOT="/opt/otxapps"
 export LOG_DIR="${OTX_ROOT}/turtle-sensor/log"
 export DATA_DIR="${OTX_ROOT}/turtle-sensor/data"
+
+# systemd + digest records
 export UNIT_FILE="/etc/systemd/system/${SVC}.service"
+export DIGEST_FILE="${ETC_DIR}/sensor.image.digest"
+export DIGEST_HISTORY_FILE="${ETC_DIR}/sensor.image.digest.history"
 
 # Optional proxy (blank = none)
 export HTTPS_PROXY_URL="http://PROXY_HOST:PROXY_PORT"
 export NO_PROXY_LIST="localhost,127.0.0.1,.corp.example.com"
 ```
 
-## 2) Prerequisites
-
-### Install packages and validate baseline
+## 1) Prereqs (packages + baseline checks)
 
 ```bash
-# Install required base packages
-sudo dnf -y install podman jq curl ca-certificates ripgrep
+# Install required packages (podman + tooling used below)
+sudo dnf -y install podman jq curl ca-certificates ripgrep openssl
 > Complete!
 
-# Confirm Podman version
+# Confirm runtime versions
 podman --version
 > podman version X.Y.Z
 
-# Confirm systemd version
 systemctl --version | head -n 1
 > systemd ...
 
-# Ensure SELinux is enforcing
+# Confirm SELinux mode (expected Enforcing on hardened RHEL)
 getenforce
 > Enforcing
 
-# Confirm time sync status
+# Confirm time sync signals (best-effort check; output varies by host config)
 timedatectl status | rg -n "System clock synchronized|NTP service|Time zone" || true
 > System clock synchronized: yes
 > NTP service: active
 ```
 
-## 3) Directory layout
-
-### Prepare `/etc` and `/opt`
+## 2) Directory layout (host)
 
 ```bash
+# Create config dir (root-only)
 sudo install -d -m 0750 -o root -g root "${ETC_DIR}"
 > created (or already exists)
 
+# Ensure /opt/otxapps exists
 sudo install -d -m 0755 -o root -g root "${OTX_ROOT}"
 > created (or already exists)
 
+# Create persistent log + data directories
 sudo install -d -m 0755 -o root -g root "${LOG_DIR}" "${DATA_DIR}"
 > created (or already exists)
 
+# Verify paths and perms
 ls -ald "${ETC_DIR}" "${OTX_ROOT}" "${LOG_DIR}" "${DATA_DIR}"
 > drwxr-x--- root root ... /etc/turtle
-> drwxr-xr-x root root ... /opt/otxapps
-> drwxr-xr-x root root ... /opt/otxapps/turtle-sensor/log
-> drwxr-xr-x root root ... /opt/otxapps/turtle-sensor/data
+> drwxr-xr-xr-x root root ... /opt/otxapps
+> drwxr-xr-xr-x root root ... /opt/otxapps/turtle-sensor/log
+> drwxr-xr-xr-x root root ... /opt/otxapps/turtle-sensor/data
 ```
 
-## 4) CA trust configuration
-
-### Option A (preferred): system trust store
+## 3) CA trust (preferred: system trust store)
 
 ```bash
-# Copy your internal CA bundle (PEM) to anchors (name it something stable)
-# Example filename: turtle-internal-ca.pem
+# Install internal CA bundle into system trust anchors (stable filename)
 sudo cp INTERNAL_CA.pem /etc/pki/ca-trust/source/anchors/turtle-internal-ca.pem
 > (no output)
 
+# Rebuild system trust
 sudo update-ca-trust
 > (no output)
-```
 
-### Option B (alternate): registry-specific trust (containers)
-
-```bash
-# NOTE: Use this only if you *cannot* use system trust store.
-# sudo install -d -m 0755 "/etc/containers/certs.d/${HARBOR_FQDN}"
-# sudo cp INTERNAL_CA.pem "/etc/containers/certs.d/${HARBOR_FQDN}/ca.crt"
-# > installed
-```
-
-### Validate CA (Harbor TLS)
-
-```bash
-# Confirm Harbor certificate trust
+# Validate Harbor TLS chain is trusted by the host CA bundle
 openssl s_client -connect "${HARBOR_FQDN}:443" -servername "${HARBOR_FQDN}" </dev/null 2>/dev/null | rg "Verify return code|subject=|issuer="
 > Verify return code: 0 (ok)
 ```
 
-## 5) Registry authentication
+## 4) Registry auth + pull (rootful podman)
 
-### Login and pull
+> Keep `sudo` on all Podman commands to avoid "container not found" across stores.
 
 ```bash
-# Authenticate to the Harbor registry
-podman login "${HARBOR_FQDN}"
+sudo podman login "${HARBOR_FQDN}"
 > Login Succeeded!
 
-# Pull the requested image tag
-podman pull "${IMAGE}"
+# Pull the requested tag
+sudo podman pull "${IMAGE}"
 > ... pulled ...
 
-# Inspect images to confirm pull
-podman images | head
+# Quick sanity check: image appears locally
+sudo podman images | head
 > REPOSITORY ... TAG ... IMAGE ID ... CREATED ... SIZE
 ```
 
-## 6) (Recommended) Pin deployment to a digest
-
-### Deterministic image reference
+## 5) Pin to digest (deterministic deployment)
 
 ```bash
-# Capture the pulled image's RepoDigest and pin to it for *this* deployment.
-# This avoids "tag moved" surprises and makes rollback/audit easier.
-export IMAGE_DIGEST="$(podman image inspect "${IMAGE}" --format '{{index .RepoDigests 0}}')"
+# Derive a pinned digest reference from the pulled tag.
+# Expected result format: HARBOR_FQDN/turtle/sensor@sha256:...
+
+export IMAGE_DIGEST="$(
+  sudo podman image inspect "${IMAGE}" --format '{{json .RepoDigests}}' \
+  | jq -r '.[]' \
+  | rg -m 1 "^${HARBOR_FQDN}/${IMAGE_REPO}@sha256:"
+)"
+
+# Fail fast if digest did not resolve (prevents creating a container from an empty ref)
+test -n "${IMAGE_DIGEST}"
+> (no output)
+
 echo "${IMAGE_DIGEST}"
 > HARBOR_FQDN/turtle/sensor@sha256:...
 
-# From here on, use IMAGE_REF as the pinned reference.
+# Use IMAGE_REF everywhere below
 export IMAGE_REF="${IMAGE_DIGEST}"
 ```
 
-## 7) Environment file
-
-### `/etc/turtle/sensor.env`
+## 6) Record digest on-host (audit + rollback)
 
 ```bash
-# Create the env file with required defaults
+# Overwrite "current" digest file (single line)
+echo "${IMAGE_REF}" | sudo tee "${DIGEST_FILE}" >/dev/null
+> wrote
+
+# Append to history with ISO timestamp, service name, and digest
+echo "$(date -Is) ${SVC} ${IMAGE_REF}" | sudo tee -a "${DIGEST_HISTORY_FILE}" >/dev/null
+> appended
+
+# Lock down files
+sudo chmod 0640 "${DIGEST_FILE}" "${DIGEST_HISTORY_FILE}"
+sudo chown root:root "${DIGEST_FILE}" "${DIGEST_HISTORY_FILE}"
+> secured
+
+# Verify last entry
+sudo tail -n 3 "${DIGEST_HISTORY_FILE}"
+> 2025-12-20T06:12:34-06:00 turtle-sensor HARBOR_FQDN/turtle/sensor@sha256:...
+```
+
+## 7) Environment file (`/etc/turtle/sensor.env`)
+
+```bash
+# Write base env file (use placeholders for proxy injection)
 sudo tee "${ENV_FILE}" >/dev/null <<'EOF'
 # Turtle-Sensor runtime config
 
@@ -173,7 +186,6 @@ HTTPS_PROXY=__HTTPS_PROXY_URL__
 NO_PROXY=__NO_PROXY_LIST__
 
 # App paths (host-mounted)
-OTX_ROOT=/opt/otxapps
 SENSOR_LOG_DIR=/opt/otxapps/turtle-sensor/log
 SENSOR_DATA_DIR=/opt/otxapps/turtle-sensor/data
 
@@ -183,200 +195,224 @@ SENSOR_MODE=run
 EOF
 > wrote
 
-# Inject proxy values into the env file
+# Escape '&' for sed replacement safety
+export HTTPS_PROXY_URL_ESCAPED="${HTTPS_PROXY_URL//&/\\&}"
+export NO_PROXY_LIST_ESCAPED="${NO_PROXY_LIST//&/\\&}"
+
+# Inject proxy values (blank is allowed)
 sudo sed -i \
-  -e "s|__HTTPS_PROXY_URL__|${HTTPS_PROXY_URL}|g" \
-  -e "s|__NO_PROXY_LIST__|${NO_PROXY_LIST}|g" \
+  -e "s|__HTTPS_PROXY_URL__|${HTTPS_PROXY_URL_ESCAPED}|g" \
+  -e "s|__NO_PROXY_LIST__|${NO_PROXY_LIST_ESCAPED}|g" \
   "${ENV_FILE}"
 > updated
 
-# Lock down permissions on the env file
+# Lock down env file (contains operational settings; may contain sensitive endpoints)
 sudo chmod 0640 "${ENV_FILE}"
 sudo chown root:root "${ENV_FILE}"
 > secured
 
-# Sanity-check key variables
-sudo rg -n "CONTROLLER_|REQUESTS_CA_BUNDLE|HTTPS_PROXY|NO_PROXY|OTX_ROOT|SENSOR_|LOG_LEVEL|SENSOR_MODE" "${ENV_FILE}"
+# Sanity-check key settings rendered as expected
+sudo rg -n "CONTROLLER_|REQUESTS_CA_BUNDLE|HTTPS_PROXY|NO_PROXY|SENSOR_|LOG_LEVEL|SENSOR_MODE" "${ENV_FILE}"
 > ... shows configured values ...
 ```
 
-## 8) Create (or replace) the container
-
-### Podman create (journald logging, SELinux-safe mounts)
+## 8) Create/replace container (authoritative; systemd does **not** create)
 
 ```bash
-# Remove any existing container to avoid conflicts
+# Stop service first if it exists (prevents "resource busy" surprises)
+sudo systemctl stop "${SVC}.service" 2>/dev/null || true
+> stopped (or none)
+
+# Remove existing container definition (safe if missing)
 sudo podman rm -f "${SVC}" 2>/dev/null || true
 > removed (or none)
 
-# Create (or replace) the container with pinned image and mounts
+# Create container using pinned digest and least-privilege mounts (only log/data)
 sudo podman create \
   --name "${SVC}" \
   --replace \
   --log-driver=journald \
   --env-file "${ENV_FILE}" \
-  -v "${OTX_ROOT}:${OTX_ROOT}:Z" \
+  -v "${LOG_DIR}:${LOG_DIR}:Z" \
+  -v "${DATA_DIR}:${DATA_DIR}:Z" \
   "${IMAGE_REF}"
 > container created
 
-# Verify container state
+# Verify container is present and in Created state
 sudo podman ps -a --filter "name=${SVC}"
 > ... STATUS: Created
 ```
 
-## 9) Generate and install systemd unit
-
-### Generate unit and enable service
+## 9) Generate & install systemd unit (no `--new`)
 
 ```bash
-# Generate the systemd unit from the container definition
+# Generate a unit that manages the EXISTING named container
 sudo podman generate systemd \
-  --new \
   --name "${SVC}" \
   > "${UNIT_FILE}"
 > wrote unit
 
-# Recommended: harden the systemd unit (drop-in) rather than editing the generated file
-sudo install -d -m 0755 "/etc/systemd/system/${SVC}.service.d"
-> created
+# Secure unit file permissions
+sudo chmod 0644 "${UNIT_FILE}"
+sudo chown root:root "${UNIT_FILE}"
+> secured
 
-# Apply hardening overrides
-sudo tee "/etc/systemd/system/${SVC}.service.d/10-hardening.conf" >/dev/null <<'EOF'
-[Service]
-Restart=on-failure
-RestartSec=5
-NoNewPrivileges=true
-PrivateTmp=true
-ProtectHome=true
-ProtectSystem=strict
-EOF
-> wrote drop-in
-
-# Reload units to pick up changes
+# Reload systemd to pick up the new unit
 sudo systemctl daemon-reload
 > reloaded
+```
 
-# Enable and start the service
+## 10) Enable + start
+
+```bash
 sudo systemctl enable --now "${SVC}.service"
 > enabled
 > started
 ```
 
-## 10) Verification
-
-### Service, logs, container state, and environment
+## 11) Verification (consistent + actionable)
 
 ```bash
-# Check active state
+# 11a) systemd health
+systemctl is-active "${SVC}.service"
+> active
+
 systemctl status "${SVC}.service" --no-pager
 > Active: active (running)
 
-# Review recent logs
+# 11b) service logs (look for TLS/CA/proxy/controller errors)
 journalctl -u "${SVC}.service" -n 200 --no-pager
 > ... startup logs (no TLS/CA errors) ...
 
-# Confirm container is running
-podman ps --filter "name=${SVC}"
-> ... STATUS: Up ...
+# 11c) container state + pinned image reference (must show @sha256)
+sudo podman ps --filter "name=${SVC}" --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"
+> turtle-sensor  HARBOR_FQDN/turtle/sensor@sha256:...  Up ...
 
-# Verify environment variables inside the container
-podman exec "${SVC}" /bin/bash -lc 'env | rg "SENSOR_|OTX_ROOT|LOG_LEVEL|HTTPS_PROXY|NO_PROXY|CONTROLLER_" | sort'
+# 11d) confirm env was loaded into container
+sudo podman exec "${SVC}" /bin/bash -lc 'env | rg "SENSOR_|LOG_LEVEL|HTTPS_PROXY|NO_PROXY|CONTROLLER_" | sort'
 > ... expected vars present ...
+
+# 11e) confirm the on-host recorded digest matches the running container image
+echo "recorded=$(sudo cat "${DIGEST_FILE}")"
+> recorded=HARBOR_FQDN/turtle/sensor@sha256:...
+
+echo "running=$(sudo podman inspect "${SVC}" --format '{{.ImageName}}')"
+> running=HARBOR_FQDN/turtle/sensor@sha256:...
 ```
 
-## 11) Upgrade procedure (safe)
-
-### Pull (tag) → repin (digest) → recreate → restart
+## 12) Upgrade (safe): pull tag → repin digest → record → recreate → restart → verify
 
 ```bash
-# Pull latest tag
+# Pull latest for the chosen tag
 sudo podman pull "${IMAGE}"
 > ... pulled ...
 
-# Repin to digest
-export IMAGE_DIGEST="$(sudo podman image inspect "${IMAGE}" --format '{{index .RepoDigests 0}}')"
-echo "${IMAGE_DIGEST}"
-> HARBOR_FQDN/turtle/sensor@sha256:...
+# Recompute digest ref
+export IMAGE_DIGEST="$(
+  sudo podman image inspect "${IMAGE}" --format '{{json .RepoDigests}}' \
+  | jq -r '.[]' \
+  | rg -m 1 "^${HARBOR_FQDN}/${IMAGE_REPO}@sha256:"
+)"
+test -n "${IMAGE_DIGEST}"
+> (no output)
 
 export IMAGE_REF="${IMAGE_DIGEST}"
+echo "${IMAGE_REF}"
+> HARBOR_FQDN/turtle/sensor@sha256:...
 
-# Recreate container with pinned digest
+# Record digest (current + history)
+echo "${IMAGE_REF}" | sudo tee "${DIGEST_FILE}" >/dev/null
+> wrote
+echo "$(date -Is) ${SVC} ${IMAGE_REF}" | sudo tee -a "${DIGEST_HISTORY_FILE}" >/dev/null
+> appended
+
+# Recreate container from pinned digest
+sudo systemctl stop "${SVC}.service"
+> stopped
+
 sudo podman rm -f "${SVC}" 2>/dev/null || true
+> removed (or none)
+
 sudo podman create \
   --name "${SVC}" \
   --replace \
   --log-driver=journald \
   --env-file "${ENV_FILE}" \
-  -v "${OTX_ROOT}:${OTX_ROOT}:Z" \
+  -v "${LOG_DIR}:${LOG_DIR}:Z" \
+  -v "${DATA_DIR}:${DATA_DIR}:Z" \
   "${IMAGE_REF}"
 > container created
 
-# Restart service
-sudo systemctl restart "${SVC}.service"
-> restarted
+# Restart service and verify image pin
+sudo systemctl start "${SVC}.service"
+> started
 
-# Show current container status and pinned image
 sudo podman ps --filter "name=${SVC}" --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"
 > turtle-sensor  HARBOR_FQDN/turtle/sensor@sha256:...  Up ...
 ```
 
-## 12) Rollback procedure (two options)
-
-### Option A: Podman rollback (if supported/configured)
+## 13) Rollback (always works): choose digest → record → recreate → restart
 
 ```bash
-sudo podman rollback "${SVC}" || true
-> rolled back (if supported)  (or)  > error/unsupported
+# Option A: roll back to the last "current" recorded digest
+export IMAGE_REF="$(sudo cat "${DIGEST_FILE}")"
+test -n "${IMAGE_REF}"
+> (no output)
 
-sudo systemctl restart "${SVC}.service"
-> restarted
-```
+# Option B: pick an older digest from history and set IMAGE_REF manually
+sudo tail -n 20 "${DIGEST_HISTORY_FILE}"
+> 2025-... turtle-sensor HARBOR_FQDN/turtle/sensor@sha256:OLDER...
 
-### Option B: Roll back by pinning to the previous recorded digest (always works)
-
-```bash
-# Set IMAGE_REF to your previously recorded digest and re-create container:
+# If selecting a specific older digest, set it like:
 # export IMAGE_REF="HARBOR_FQDN/turtle/sensor@sha256:PREVIOUS..."
-# then run the same recreate + restart steps from Index: 10.
+
+# Record the rollback choice (so host state matches reality)
+echo "${IMAGE_REF}" | sudo tee "${DIGEST_FILE}" >/dev/null
+> wrote
+echo "$(date -Is) ${SVC} ${IMAGE_REF}" | sudo tee -a "${DIGEST_HISTORY_FILE}" >/dev/null
+> appended
+
+# Recreate container + restart
+sudo systemctl stop "${SVC}.service"
+> stopped
+
+sudo podman rm -f "${SVC}" 2>/dev/null || true
+> removed (or none)
+
+sudo podman create \
+  --name "${SVC}" \
+  --replace \
+  --log-driver=journald \
+  --env-file "${ENV_FILE}" \
+  -v "${LOG_DIR}:${LOG_DIR}:Z" \
+  -v "${DATA_DIR}:${DATA_DIR}:Z" \
+  "${IMAGE_REF}"
+> container created
+
+sudo systemctl start "${SVC}.service"
+> started
+
+sudo podman ps --filter "name=${SVC}" --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"
+> turtle-sensor  HARBOR_FQDN/turtle/sensor@sha256:...  Up ...
 ```
 
-## 13) Uninstall / cleanup
-
-### Remove service and container (keeps `/opt/otxapps` data unless you delete it)
+## 14) Uninstall / cleanup (keeps `/opt/otxapps` data unless removed)
 
 ```bash
+# Stop + disable the service
 sudo systemctl disable --now "${SVC}.service" 2>/dev/null || true
 > disabled (or none)
 
+# Remove unit + reload systemd
 sudo rm -f "${UNIT_FILE}"
-sudo rm -rf "/etc/systemd/system/${SVC}.service.d"
 sudo systemctl daemon-reload
 > reloaded
 
+# Remove container definition (data remains on host)
 sudo podman rm -f "${SVC}" 2>/dev/null || true
 > removed
 
-# Optional: CA cleanup (only if you installed it specifically for this)
+# Optional: CA cleanup (only if installed specifically for this host/app)
 # sudo rm -f /etc/pki/ca-trust/source/anchors/turtle-internal-ca.pem
 # sudo update-ca-trust
-```
-
-## 14) Operator checklist
-
-### Before / After
-
-```bash
-# Before:
-# - Host hardened; SELinux Enforcing
-# - CA trust installed + validated against Harbor
-# - Harbor login works
-# - Controllers reachable (direct or via proxy)
-# - /opt/otxapps created
-# - /etc/turtle/sensor.env validated
-
-# After:
-# - service running
-# - logs clean (no TLS/CA errors)
-# - sensor registers / checks in
-# - image digest recorded (RepoDigest)
 ```
