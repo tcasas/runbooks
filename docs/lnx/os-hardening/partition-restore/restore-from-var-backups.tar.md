@@ -1,3 +1,5 @@
+[Runbooks Index](../../../index.md) / [Linux](../../index.md) / [OS Hardening](../index.md) / [Partition Restore](index.md)
+
 # Restore /var/var_clients from /root/var-backup.tar
 
 ## Purpose

@@ -1,3 +1,5 @@
+[Runbooks Index](../../../index.md) / [Linux](../../index.md) / [OS Hardening](../index.md) / [File Hardening](index.md)
+
 # Runbook: Audit and remediate world-writable files
 
 ## Purpose

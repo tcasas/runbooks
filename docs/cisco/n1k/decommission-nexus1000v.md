@@ -1,3 +1,5 @@
+[Runbooks Index](../../index.md) / [Cisco](../index.md) / [Nexus 1000V](index.md)
+
 # Cisco Nexus 1000V Decommission Runbook
 
 ## Preparation

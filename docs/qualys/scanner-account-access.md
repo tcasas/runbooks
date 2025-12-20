@@ -1,3 +1,5 @@
+[Runbooks Index](../index.md) / [Qualys](index.md)
+
 # Qualys Scanner Account Access Troubleshooting
 
 Use this runbook when a Qualys network scanner account suddenly loses SSH access to a hardened Linux host.

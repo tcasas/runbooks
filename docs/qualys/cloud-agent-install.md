@@ -1,3 +1,5 @@
+[Runbooks Index](../index.md) / [Qualys](index.md)
+
 # Qualys Cloud Agent Installation Runbook
 
 This runbook describes how to transfer and install the Qualys Cloud Agent with proxy support and sudo configuration.

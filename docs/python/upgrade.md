@@ -1,3 +1,5 @@
+[Runbooks Index](../index.md) / [Python](index.md)
+
 # Python Upgrade Runbook (virtualenv focused)
 
 This runbook guides you through upgrading Python while keeping projects isolated with `venv`.

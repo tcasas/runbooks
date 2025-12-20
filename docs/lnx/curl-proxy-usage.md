@@ -1,3 +1,5 @@
+[Runbooks Index](../index.md) / [Linux](index.md)
+
 # `curl` Proxy Usage
 
 ## Scope and goal

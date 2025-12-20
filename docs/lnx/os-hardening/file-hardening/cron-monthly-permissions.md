@@ -1,3 +1,5 @@
+[Runbooks Index](../../../index.md) / [Linux](../../index.md) / [OS Hardening](../index.md) / [File Hardening](index.md)
+
 # Runbook: Restrict permissions on `/etc/cron.monthly`
 
 ## Purpose

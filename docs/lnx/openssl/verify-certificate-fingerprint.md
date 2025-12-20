@@ -1,3 +1,5 @@
+[Runbooks Index](../../index.md) / [Linux](../index.md) / [OpenSSL](index.md)
+
 # Verify certificate fingerprint
 
 Use this procedure to confirm a certificate file or live endpoint matches an expected SHA-256 fingerprint. Normalizing fingerprints (uppercase, no colons) avoids formatting differences between tools.

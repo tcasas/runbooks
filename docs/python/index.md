@@ -1,3 +1,5 @@
+[Runbooks Index](../index.md) / [Python](index.md)
+
 # Python Runbooks
 
 - [IPython Quickstart](ipython.md)

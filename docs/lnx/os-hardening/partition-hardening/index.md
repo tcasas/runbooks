@@ -1,3 +1,5 @@
+[Runbooks Index](../../../index.md) / [Linux](../../index.md) / [OS Hardening](../index.md) / [Partition Hardening](index.md)
+
 # CIS Partition Hardening
 
 - [Implementation Overview](0-cis-partition-hardening.md)

@@ -1,3 +1,5 @@
+[Runbooks Index](../../../index.md) / [Linux](../../index.md) / [OS Hardening](../index.md) / [Partition Hardening](index.md)
+
 # auditd.service FAILED — Post-CIS Hardening Remediation
 **Host:** all-vantls-m001
 

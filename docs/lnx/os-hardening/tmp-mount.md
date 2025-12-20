@@ -1,3 +1,5 @@
+[Runbooks Index](../../index.md) / [Linux](../index.md) / [OS Hardening](index.md)
+
 # Ensure /tmp is mounted with security options
 
 This runbook enables and configures the `tmp.mount` systemd unit so `/tmp` is mounted as a `tmpfs` with `noexec`, `nosuid`, and `nodev` options. It aligns with controls that require `/tmp` to be on a separate partition with restrictive mount flags.

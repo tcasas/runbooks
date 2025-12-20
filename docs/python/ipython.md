@@ -1,3 +1,5 @@
+[Runbooks Index](../index.md) / [Python](index.md)
+
 # IPython Quickstart
 
 Use this runbook to install IPython, launch sessions, and lean on core features for fast Python exploration.

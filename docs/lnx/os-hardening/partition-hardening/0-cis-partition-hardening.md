@@ -1,3 +1,5 @@
+[Runbooks Index](../../../index.md) / [Linux](../../index.md) / [OS Hardening](../index.md) / [Partition Hardening](index.md)
+
 # CIS Partition Hardening and Encrypted /var Implementation (RHEL 8 Jumpboxes)
 
 **Applies to all jumpboxes after validating on all-vantls-m001.** Includes full training-wheels comments for safety and clarity, plus the critical dracut override so the keyfile is bundled into initramfs.

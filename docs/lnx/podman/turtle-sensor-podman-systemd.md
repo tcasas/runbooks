@@ -1,3 +1,5 @@
+[Runbooks Index](../../index.md) / [Linux](../index.md) / [Podman](index.md)
+
 # Turtle-Sensor Podman + systemd Deployment (Model-B + Digest Recording)
 
 **Model-B:** Operator creates or replaces the named container. Systemd only starts/stops that container—no container creation inside the unit.

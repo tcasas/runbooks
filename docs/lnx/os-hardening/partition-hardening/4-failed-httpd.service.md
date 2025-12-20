@@ -1,3 +1,5 @@
+[Runbooks Index](../../../index.md) / [Linux](../../index.md) / [OS Hardening](../index.md) / [Partition Hardening](index.md)
+
 # httpd.service FAILED — Missing Log Directory + Stale DocumentRoot After CIS /var Hardening
 **Host:** all-vantls-m001
 

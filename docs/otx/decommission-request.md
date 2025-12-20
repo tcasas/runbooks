@@ -1,3 +1,5 @@
+[Runbooks Index](../index.md) / [OTX](index.md)
+
 # Decommission Change Requests
 
 This runbook summarizes the three-phase process for decommissioning in SM9. Each phase builds on the previous change record, so keep the parent record accurate and carry updates forward.

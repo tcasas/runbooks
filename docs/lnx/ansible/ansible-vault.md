@@ -1,3 +1,5 @@
+[Runbooks Index](../../index.md) / [Linux](../index.md) / [Ansible](index.md)
+
 # Runbook: Using Ansible Vault for secrets management
 
 ## Purpose
