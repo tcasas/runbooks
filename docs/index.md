@@ -10,6 +10,7 @@ Welcome to the runbooks repository. Use this page to jump to the available guide
 - [F5](f5/index.md)
 - [GCP](gcp/index.md)
 - [AWS](aws/index.md)
+- [Azure](azure/index.md)
 - [Linux OS](lnx/index.md)
 - [OTX](otx/index.md)
 - [Python](python/index.md)
