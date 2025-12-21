@@ -6,6 +6,21 @@ This runbook sets up an internal, Turtle-Sensor-only PKI with an offline-ish Roo
 
 > **Scope:** Builds on RHEL 9 with OpenSSL 3.
 
+## Table of Contents
+- [0) Variables (edit these)](#0-variables-edit-these)
+- [1) Prereqs](#1-prereqs)
+- [2) Create directories](#2-create-directories)
+- [3) Write OpenSSL configs (Root + Issuer)](#3-write-openssl-configs-root--issuer)
+- [4) Create Root CA key + cert (OFFLINE ROOT)](#4-create-root-ca-key--cert-offline-root)
+- [5) Create Issuer (Intermediate) key + CSR (ONLINE ISSUER)](#5-create-issuer-intermediate-key--csr-online-issuer)
+- [6) Sign Issuer CSR with Root CA (do this on Root host)](#6-sign-issuer-csr-with-root-ca-do-this-on-root-host)
+- [7) Build full chain bundle (issuer + root)](#7-build-full-chain-bundle-issuer--root)
+- [8) Install Root CA into RHEL trust store (run on sensors + controllers)](#8-install-root-ca-into-rhel-trust-store-run-on-sensors--controllers)
+- [9) Issue Controller server cert (SAN-enabled)](#9-issue-controller-server-cert-san-enabled)
+- [10) Issue Sensor client cert (SAN-enabled, short-lived)](#10-issue-sensor-client-cert-san-enabled-short-lived)
+- [11) Quick validation commands](#11-quick-validation-commands)
+- [12) Output locations (what you actually deploy)](#12-output-locations-what-you-actually-deploy)
+
 ## 0) Variables (edit these)
 ```bash
 # Where to build CA files
