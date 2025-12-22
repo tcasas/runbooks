@@ -12,6 +12,7 @@ Welcome to the runbooks repository. Use this page to jump to the available guide
 - [AWS](aws/index.md)
 - [Azure](azure/index.md)
 - [Linux OS](lnx/index.md)
+- [Git](git/index.md)
 - [OTX](otx/index.md)
 - [Python](python/index.md)
 - [Qualys](qualys/index.md)

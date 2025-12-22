@@ -1,4 +1,4 @@
-[Runbooks Index](../../index.md) / [Linux](../index.md) / [Git](index.md)
+[Runbooks Index](../index.md) / [Git](index.md)
 
 # Git Runbooks
 
