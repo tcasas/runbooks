@@ -3,3 +3,4 @@
 # Turtle CLI Runbooks
 
 - [Certificate CLI commands](cert-cli-commands.md)
+- [GCP CLI commands](gcp-commands.md)
