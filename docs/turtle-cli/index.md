@@ -5,4 +5,4 @@
 - [Certificate commands](cert-commands.md)
 - [SGO commands](sgo-commands.md)
 - [GCP commands](gcp-commands.md)
-- [Turtle CLI command reference](f5-commands.md)
+- [F5 commands](f5-commands.md)
