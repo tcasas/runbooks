@@ -15,5 +15,6 @@ Welcome to the runbooks repository. Use this page to jump to the available guide
 - [OTX](otx/index.md)
 - [Python](python/index.md)
 - [Qualys](qualys/index.md)
+- [Turtle Certs](turtle-certs/index.md)
 - [Turtle Sensor](turtle-sensor/index.md)
 - [Turtle CLI](turtle-cli/index.md)
