@@ -1,8 +1,8 @@
 [Runbooks Index](../index.md) / [Turtle CLI](index.md)
 
-# Turtle CLI command reference
+# Turtle CLI F5 commands
 
-Use these commands inside the Turtle CLI REPL to work with Local Traffic Manager (LTM) devices, REST files, and supporting system metadata. Commands are grouped by their verb. Optional arguments appear in square brackets.
+Use these commands inside the Turtle CLI REPL to work with F5 Local Traffic Manager (LTM) devices, REST files, and supporting system metadata. Commands are grouped by their verb. Optional arguments appear in square brackets.
 
 ## Delete
 
