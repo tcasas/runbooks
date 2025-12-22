@@ -16,3 +16,4 @@ Welcome to the runbooks repository. Use this page to jump to the available guide
 - [Python](python/index.md)
 - [Qualys](qualys/index.md)
 - [Turtle Sensor](turtle-sensor/index.md)
+- [Turtle CLI](turtle-cli/index.md)
