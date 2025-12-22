@@ -9,6 +9,7 @@
 - [User Login Failure](user-login-failure.md)
 - [SSH Login Failure — `su` Works but SSH Fails](ssh-login-failure-su-works.md)
 - [Login Noise Debug — Escape-sequence noise](login-noise-debug.md)
+- [Troubleshoot Outbound Connections with `tcpdump`](tcpdump-outbound-connections.md)
 
 ## Commands
 - [`ansible`](ansible/index.md) — Playbook and role guidance for Linux automation.
