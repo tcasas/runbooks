@@ -16,7 +16,7 @@
 
 ### Step sequence (fixed order)
 1. `issue_sectigo_cert`
-2. `exercise_load_by_scope_key`
+2. `load_by_scope_key`
 3. `install_f5_cert`
 4. `install_gcp_cert`
 
@@ -65,7 +65,7 @@ python -m app.tests.repl.cert_workflow --list-scope-keys
 python -m app.tests.repl.cert_workflow --no-resume --state-file /tmp/cert_state.json
 
 # Start at load_by_scope_key with explicit inputs for the CertFile hydration step
-python -m app.tests.repl.cert_workflow --start-from exercise_load_by_scope_key \
+python -m app.tests.repl.cert_workflow --start-from load_by_scope_key \
   --scope-key your_scope_key_here --controller-name your_controller
 
 # Override issuance settings while pausing between steps
@@ -94,7 +94,7 @@ python -m app.tests.repl.cert_workflow --list-steps
 
 Expected:
 - `issue_sectigo_cert`: Issue a Sectigo certificate using existing REPL helper.
-- `exercise_load_by_scope_key`: Hydrate a CertFile via `load_by_scope_key()`.
+- `load_by_scope_key`: Hydrate a CertFile via `load_by_scope_key()`.
 - `install_f5_cert`: Install certificate to F5 using REPL helper.
 - `install_gcp_cert`: Install certificate to GCP using REPL helper.
 
@@ -147,7 +147,7 @@ State file <path> is unreadable; resetting progress
 
 Start from a specific step (overrides resume logic). Choices are exactly:
 - `issue_sectigo_cert`
-- `exercise_load_by_scope_key`
+- `load_by_scope_key`
 - `install_f5_cert`
 - `install_gcp_cert`
 
@@ -193,13 +193,13 @@ Behavior:
 --list-scope-keys
 ```
 
-### CertFile hydration flags (`exercise_load_by_scope_key`)
+### CertFile hydration flags (`load_by_scope_key`)
 ```
---scope-key <scope_key>            # REQUIRED when running exercise_load_by_scope_key
+--scope-key <scope_key>            # REQUIRED when running load_by_scope_key
 --controller-name <controller>     # Optional controller override
 ```
 
-Note: if `exercise_load_by_scope_key` runs without `--scope-key`, the script exits immediately:
+Note: if `load_by_scope_key` runs without `--scope-key`, the script exits immediately:
 ```
 raise SystemExit("--scope-key is required ...")
 ```
@@ -259,7 +259,7 @@ Expected: starts from `issue_sectigo_cert`; writes progress to `/tmp/cert_state.
 ```bash
 python -m app.tests.repl.cert_workflow \
   --no-resume \
-  --start-from exercise_load_by_scope_key \
+  --start-from load_by_scope_key \
   --scope-key <scope_key> \
   --controller-name <controller>
 ```
@@ -308,7 +308,7 @@ INFO cert-workflow Step <step> result: ok=True msg=<...>
 - 0 : workflow complete OR stopped by user during `--pause`.
 - 1 : a step returned `ok=False` (workflow stops immediately).
 - 2 : (typical argparse) invalid args / unknown flags.
-- Immediate exit: missing `--scope-key` when `exercise_load_by_scope_key` runs.
+- Immediate exit: missing `--scope-key` when `load_by_scope_key` runs.
 
 ### Failure behavior
 If a step fails (`ok=False`):
@@ -343,6 +343,6 @@ ERROR cert-workflow Stopping workflow because <step> failed
 ### Missing required data when skipping steps
 - If you skip issuance and start at install steps, you must provide:
   - `--device` / `--project-id` / `--cn` / (and GCP: `--region` / `--proxy-name` as needed)
-- If you start at `exercise_load_by_scope_key`, you must provide `--scope-key`.
+- If you start at `load_by_scope_key`, you must provide `--scope-key`.
 
 ## End of Runbook
