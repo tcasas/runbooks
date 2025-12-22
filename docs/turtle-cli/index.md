@@ -2,9 +2,7 @@
 
 # Turtle CLI Runbooks
 
-- [Certificate CLI commands](cert-commands.md)
-- [Certificate CLI commands](cert-cli-commands.md)
-- [SGO CLI commands](sgo-commands.md)
-- [GCP CLI commands](gcp-commands.md)
+- [Certificate commands](cert-commands.md)
+- [SGO commands](sgo-commands.md)
+- [GCP commands](gcp-commands.md)
 - [Turtle CLI command reference](f5-commands.md)
-- [SGO CLI commands](sgo-cli-commands.md)
