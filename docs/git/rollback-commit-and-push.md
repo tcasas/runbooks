@@ -5,6 +5,7 @@
 Use this runbook to revert an unwanted commit in a local Linux repository and publish the fix to GitHub.
 
 ## Prerequisites
+- Know whether the bad commit was already pushed and whether collaborators may have pulled it. If others pulled it, prefer `git revert` (safe, no history rewrite) over `git reset --hard` (rewrites history).
 - A clean working tree (stash or commit any work in progress):
   ```bash
   git status
@@ -23,6 +24,7 @@ Use this runbook to revert an unwanted commit in a local Linux repository and pu
    ```bash
    git branch backup/rollback-$(date +%Y%m%d)
    ```
+   - This is optional but recommended when you are unsure about the revert scope.
 
 ## 2) Identify the Commit to Roll Back
 1. Locate the commit hash and message:
@@ -30,6 +32,7 @@ Use this runbook to revert an unwanted commit in a local Linux repository and pu
    git log --oneline
    ```
 2. If the commit is a merge, note the mainline parent for the revert (usually `-m 1`).
+3. Double-check that the commit(s) are consecutive if you plan to revert a range. Reverting a non-sequential set of commits may require separate `git revert` commands.
 
 ## 3) Revert the Commit Locally
 - For a single commit:
@@ -62,6 +65,7 @@ git revert --continue
    ```bash
    git status
    ```
+3. If the revert touched multiple files, run a quick smoke check (tests, lints, or the minimal verification relevant to the project) to ensure the rollback did not break anything the bad commit fixed.
 
 ## 5) Push the Fix to GitHub
 1. Push the branch normally (no history rewrite required for `git revert`):
@@ -69,6 +73,7 @@ git revert --continue
    git push origin <branch-name>
    ```
 2. If the branch is protected, open a pull request so the revert can be merged through review.
+3. Add clear context in the PR description (e.g., “Revert <sha> because it introduced <issue>”) so reviewers understand why the rollback is needed.
 
 ## Alternative: Reset and Force-Push (Use with Caution)
 Only use this method on personal or feature branches where rewriting history is acceptable.
@@ -82,3 +87,4 @@ Only use this method on personal or feature branches where rewriting history is 
    git push --force-with-lease origin <branch-name>
    ```
 3. Notify collaborators that the branch history changed to avoid integrating stale commits.
+4. After a force-push, ask collaborators to rebase or reset their local branches to avoid confusion.
