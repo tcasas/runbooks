@@ -120,7 +120,7 @@ Defaults to a local file in the current working directory (relative path):
 ```
 
 ### Resume semantics (default: enabled)
-- If `--resume=true` and `last_completed` exists: start from the step AFTER `last_completed`.
+- If `--resume` and `last_completed` exists: start from the step AFTER `last_completed`.
 - Otherwise: start from step 0.
 
 ### Force a fresh run (ignore any existing progress)
