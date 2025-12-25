@@ -18,4 +18,5 @@
 - [`netcat` Usage](netcat-usage.md) — Common `nc` patterns for connectivity checks and transfers.
 - [`openssl`](openssl/index.md) — Certificate verification and crypto utilities.
 - [`ripgrep`](ripgrep.md) — Fast, recursive text search tips (`rg`).
+- [`rsync` Usage](rsync-usage.md) — Synchronize local or remote data with `rsync`.
 - [Podman](podman/index.md) — Container management runbooks.
