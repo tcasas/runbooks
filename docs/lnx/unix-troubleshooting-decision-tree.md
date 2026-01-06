@@ -10,7 +10,7 @@ flowchart TD
 
     B -->|Network connectivity| C{Can hostname resolve?}
     C -->|No| C1[Fix DNS]
-    C -->|Yes| D{Can host be reached?\nICMP or alternative}
+    C -->|Yes| D{Can host be reached?<br/>ICMP or alternative}
     D -->|No| D1[Routing / firewall]
     D -->|Yes| E{Can service port be reached?}
     E -->|No| E1[Host firewall / upstream firewall / SELinux port label]
