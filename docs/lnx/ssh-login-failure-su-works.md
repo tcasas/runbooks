@@ -75,12 +75,9 @@
 
 ## SELinux (SSH-specific)
 
-9. **Check SELinux denials**
-   - Command: `ausearch -m AVC -ts recent | grep ssh`
-   - Quick test (temporary only):
-     - `setenforce 0`
-     - Retry SSH
-     - `setenforce 1`
+9. **If SELinux is suspected**
+   - Use the focused runbook for TACACS+/SELinux denials:  
+     [TACACS+ Fails — SELinux denial fix](tacacs-selinux-denial-fix.md).
 
 ---
 
@@ -99,7 +96,7 @@
 3. `PasswordAuthentication` disabled.
 4. Missing or incorrect SSH key permissions.
 5. `pam_access` or `pam_sepermit` restriction.
-6. SELinux SSH denial.
+6. SELinux SSH denial (see the TACACS+ SELinux runbook).
 7. `Match User` block overriding defaults.
 
 ---

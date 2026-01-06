@@ -88,12 +88,9 @@
 ---
 
 ## SELinux (RHEL family)
-17. **Check SELinux mode**  
-    `getenforce`  
-    `Enforcing` is OK, but denials may still block login.
-
-18. **Check recent SELinux denials**  
-    `ausearch -m AVC -ts recent`
+17. **If SELinux is suspected (RHEL family)**  
+    For TACACS+ and SSH-specific denials, use the dedicated runbook:  
+    [TACACS+ Fails — SELinux denial fix](tacacs-selinux-denial-fix.md).
 
 ---
 
@@ -107,6 +104,7 @@
 - `/etc/nologin` present → global login block.
 - `sssd` down or offline → domain users fail.
 - PAM edits or sshd allow/deny rules → targeted login denial.
+- SELinux denial → follow the TACACS+ SELinux runbook when SSH auth fails but `su` works.
 
 ---
 
