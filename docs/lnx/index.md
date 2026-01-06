@@ -13,6 +13,7 @@
 
 ### General troubleshooting
 - [Login Noise Debug — Escape-sequence noise](login-noise-debug.md)
+- [UNIX Troubleshooting Decision Tree](unix-troubleshooting-decision-tree.md)
 - [Troubleshoot Outbound Connections with `tcpdump`](tcpdump-outbound-connections.md)
 
 ## Commands
