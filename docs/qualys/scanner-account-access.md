@@ -1,119 +1,207 @@
 [Runbooks Index](../index.md) / [Qualys](index.md)
 
-# Qualys Scanner Account Access Troubleshooting
+# Qualys Scanner SSH Authentication Troubleshooting (Hardened Linux)
 
-Use this runbook when a Qualys network scanner account suddenly loses SSH access to a hardened Linux host.
+Use this runbook when a Qualys network scanner suddenly loses SSH access to a hardened Linux host — especially after OS hardening, SELinux enforcement, or PAM changes.
 
----
+Assumptions:
+- SSSD / LDAP / AD accounts
+- SELinux enforcing
+- TACACS and/or custom PAM
+- sudo privilege escalation for scanning
 
-## Symptoms
+------------------------------------------------------------
+Symptoms
+------------------------------------------------------------
 
-- Qualys scan results show authentication failed for the scanner account.
-- Manual SSH login with the scanner credentials prompts for a password reset or rejects the password entirely.
+Possible indicators:
 
----
+- Qualys shows: UNIX Authentication Failed
+- SSH login fails immediately (no password prompt)
+- Logs contain:
+  pam_sss: authentication failure
+  Illegal empty authtok
+  Permission denied
+- Scanner worked before hardening and now fails
 
-## Likely Cause
+------------------------------------------------------------
+Step 0 — Confirm the scanner actually reaches SSH
+------------------------------------------------------------
 
-An OS-hardening role enforces maximum password age on every account with an active password hash. The default policy sets:
+Command:
+  sudo journalctl -u sshd --since -30m
 
-- Maximum password age: **90 days**
-- Warning period: **7 days**
+If no entries appear, check network instead:
+  sudo tcpdump -n port 22
 
-The hardening task loops over `/etc/shadow` entries and applies these values to every user that has an active hash. The Qualys service account password likely expired after the hardening run.
+No SSH traffic means firewall or routing — fix network before auth.
 
-### Where is the maximum password age enforced?
+------------------------------------------------------------
+Step 1 — Confirm the username Qualys is using
+------------------------------------------------------------
 
-- `/etc/login.defs` is templated to set `PASS_MAX_DAYS` (defaults to 90) as the global maximum.
-- The hardening role also runs `password_expire_max` against each `/etc/shadow` entry that has an active hash to ensure every user matches the policy.
-- See the [maximum password age runbook](../lnx/os-hardening/password-max-age.md) for the end-to-end control and verification steps.
+In Qualys UI:
+  Scans → Authentication → Unix / SSH Records
 
----
+Note:
+- Login name
+- Auth type (password vs key)
+- Whether sudo is expected
 
-## Recovery Options
+On host:
+  id <username>
+  getent passwd <username>
 
-Choose one of the options below to restore scanner access while keeping the hardening policy intact.
+If the account does not resolve, fix SSSD / directory first.
 
-### Option 1 — Reset or Unexpire the Password (Recommended)
+------------------------------------------------------------
+Step 2 — Verify interactive SSH works
+------------------------------------------------------------
 
-1. Reset the Qualys scanner account password on the host:
+From another system:
+  ssh <username>@<host>
 
-       sudo passwd <qualys_user>
+While testing, tail logs:
+  sudo journalctl -fu sshd
+  sudo journalctl -fu sssd
 
-2. Align the account with the enforced aging settings (adjust values if your policy differs):
+Interpretation:
 
-       sudo chage -M 90 -W 7 <qualys_user>
+- Prompts for password and accepts → basic auth works
+- Prompts but rejects → wrong password stored in Qualys
+- Fails before prompting → PAM / SELinux / TACACS interference
 
-3. Update the Qualys authentication record with the new password so the scanner uses the fresh credentials on the next run (for example, in VMDR: **Scans → Authentication → New/Edit Record → Password**).
-4. Re-run the Qualys scan to confirm authentication succeeds.
+------------------------------------------------------------
+Step 3 — Check SELinux denials involving sshd
+------------------------------------------------------------
 
-### Option 2 — Use Key-Only Authentication (Avoids Password Aging)
+Command:
+  sudo ausearch -m AVC,USER_AVC -ts recent | grep sshd
 
-1. Lock the password in `/etc/shadow` so the hardening task skips the account (the `!` prefix marks a locked password):
+Look for:
+  avc: denied { name_connect } comm="sshd"
 
-       sudo usermod -p '!*' <qualys_user>
+Meaning:
+SELinux blocked sshd from contacting external auth (often TACACS).
 
-2. Configure SSH key-based authentication for the scanner account.
-3. Re-run the scan to verify key-based login works.
+Fix with a small policy module — do not disable SELinux globally.
 
-### Option 3 — Exempt the Account from Password Aging (Use Sparingly)
+------------------------------------------------------------
+Step 4 — Validate PAM ordering (most common cause)
+------------------------------------------------------------
 
-1. Customize the OS-hardening role locally so it drops the Qualys account before enforcing maximum age. For example:
+File:
+  /etc/pam.d/system-auth
 
-       password_users: "{{ password_users | difference(['qualys']) }}"
+Recommended high-level order:
 
-2. Document the exception so it can be revisited after scanner access is restored.
+1) environment / delays
+2) TACACS (if used)
+3) local UNIX auth
+4) SSSD auth
+5) explicit deny
 
-### If the scanner uses a domain account (not in `/etc/shadow`)
+Example structure:
 
-Some hardened baselines also tighten SSH and PAM controls for centrally managed accounts. If your scanner authenticates with a domain user (for example, through SSSD/LDAP) and is now blocked:
+auth required    pam_env.so
+auth required    pam_faildelay.so delay=2000000
+auth sufficient  pam_tacplus.so ...   (if TACACS is used)
+auth sufficient  pam_unix.so try_first_pass
+auth sufficient  pam_sss.so forward_pass use_first_pass
+auth required    pam_deny.so
 
-1. Confirm the account and group mappings resolve correctly:
+If TACACS runs first and returns no password, SSSD logs:
+  Illegal empty authtok
 
-       id <domain_user>
+Fix ordering, not passwords.
 
-2. Review recent hardening changes to SSH restrictions and ensure the domain account (or its group) is permitted:
-   - `AllowUsers` / `AllowGroups` in `/etc/ssh/sshd_config`
-   - `sssd.conf` access controls (for example, `simple_allow_groups` / `simple_allow_users`)
-3. Check PAM access rules that may have started denying the scanner:
-   - `/etc/security/access.conf` (often driven by `pam_access`)
-   - `/etc/pam.d/sshd` for new modules such as `pam_access` or `pam_faillock`
-4. Add the scanner account or a dedicated group to the approved lists, then restart SSH if `sshd_config` was updated.
-5. Re-run the scan to confirm authentication now succeeds.
+------------------------------------------------------------
+Step 5 — Verify sudo escalation (if Qualys uses sudo)
+------------------------------------------------------------
 
----
+Command:
+  sudo -l -U <username>
 
-## Validation Checklist
+Expected line:
+  (ALL) NOPASSWD: ALL
 
-- Scanner account can authenticate via the intended method (password or SSH key).
-- `/etc/shadow` shows either a non-expired password entry or a locked password for the Qualys account.
-- The Qualys authentication record is updated to match the host credential (new password or SSH key).
-- A follow-up Qualys scan reports successful authentication.
+If sudo requires a password, Qualys fails because it cannot answer prompts.
 
-### How to confirm which account the scanner is using
+------------------------------------------------------------
+Step 6 — Only then consider password expiration
+------------------------------------------------------------
 
-1. In the Qualys UI, open the authentication record tied to the target host (for example, in VMDR: **Scans → Authentication → Unix Records**). The **Login** field shows the username the scanner will attempt.
-2. If you manage records by API, call the Authentication Records endpoint to list the relevant entry and verify its configured login.
-3. On the host, review recent SSH logs (for example, `/var/log/auth.log` or `/var/log/secure`) for attempts from the scanner IP. The log entries include the username the scanner tried when authentication failed.
+Local /etc/shadow accounts only:
 
----
+  sudo chage -l <username>
 
-## Notes
+If expired:
 
-- Options 1 and 2 keep the hardening policy aligned for all other users.
-- Prefer key-based authentication when feasible to avoid future password aging events.
+  sudo passwd <username>
+  sudo chage -M 90 -W 7 <username>
 
-### Can the host update the Qualys authentication record?
+Domain (SSSD) accounts are managed in AD — not affected by local shadow aging.
 
-No. The record that tells scanners which credential to use lives in the Qualys platform and must be updated there (via the UI or Qualys APIs). The Qualys Cloud Agent on the target host does not sync local password changes back to the scanner authentication record.
+------------------------------------------------------------
+Common root causes (ranked)
+------------------------------------------------------------
 
----
+1) SELinux blocked sshd outbound auth
+   Symptom: AVC name_connect denials
+   Fix: targeted allow policy
 
-## Useful Links
+2) PAM ordering broke password handling
+   Symptom: Illegal empty authtok
+   Fix: correct module order
 
-- [Cloud Agent Getting Started Guide](https://docs.qualys.com/en/ca/getting-started-guide/configuration/change_ca_configuration.htm)
-- [Qualys Cloud Agent Documentation (OpenText Confluence)](https://confluence.opentext.com/display/GITVM/Cloud+Agent)
-- [Self-Service Portal](https://wlsoneprd01.opentext.net/Qualys-Agent-Status-Query)
-- [Security Self-Service Scanner](https://intranet.opentext.com/intranet/llisapi.dll/displayform/125249359/125243474/?viewid=125250622&readonly=true&sedit=false&objId=125245395&objAction=EditForm&nexturl=https%3A%2F%2Fintranet%2Eopentext%2Ecom%2Fintranet%2Fllisapi%2Edll)
-- [Cloud Agent Downloads](https://intranet.opentext.com/intranet/llisapi.dll?func=ll&objId=178461660&objAction=browse&viewType=1)
-- [Cloud Agent Platform Availability Matrix (PAM)](https://success.qualys.com/customersupport/s/cloud-agent-pam)
+3) Wrong password stored in Qualys
+   Symptom: manual SSH rejects password
+   Fix: update authentication record
+
+4) Sudo requires password
+   Symptom: sudo prompts during scan
+   Fix: NOPASSWD rule
+
+5) Network never reached sshd
+   Symptom: no sshd logs
+   Fix: firewall / routing
+
+6) Password truly expired (local account)
+   Fix: reset + chage
+
+------------------------------------------------------------
+Validation checklist
+------------------------------------------------------------
+
+- Interactive SSH login succeeds
+- No SELinux denials during login
+- PAM does not return empty authtok
+- sudo escalation works when required
+- Qualys authentication record matches reality
+
+------------------------------------------------------------
+Notes
+------------------------------------------------------------
+
+Prefer:
+- domain-backed scanner accounts
+- key-based authentication when allowed
+- minimal targeted SELinux policies
+- documented PAM changes
+
+Avoid:
+- disabling SELinux
+- globally weakening PAM
+- undocumented sshd changes
+
+------------------------------------------------------------
+Finding which account Qualys attempted
+------------------------------------------------------------
+
+1) Open the Qualys authentication record — check Login value.
+2) Review sshd logs around the scan:
+   sudo journalctl -u sshd --since -15m
+
+Logs show the username Qualys attempted.
+
+End of runbook.
