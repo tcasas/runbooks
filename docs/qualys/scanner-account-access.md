@@ -29,10 +29,18 @@ Step 0 — Confirm the scanner actually reaches SSH
 ------------------------------------------------------------
 
 Command:
-  sudo journalctl -u sshd --since -30m
+
+```bash
+# Show sshd activity over the last 30 minutes
+sudo journalctl -u sshd --since "30 minutes ago" --no-pager
+```
 
 If no entries appear, check network instead:
-  sudo tcpdump -n port 22
+
+```bash
+# Confirm TCP/22 traffic hits the host from the scanner IP
+sudo tcpdump -n -i any port 22
+```
 
 No SSH traffic means firewall or routing — fix network before auth.
 
@@ -49,8 +57,12 @@ Note:
 - Whether sudo is expected
 
 On host:
-  id <username>
-  getent passwd <username>
+
+```bash
+# Validate the account resolves locally or via SSSD/LDAP/AD
+id <username>
+getent passwd <username>
+```
 
 If the account does not resolve, fix SSSD / directory first.
 
@@ -59,11 +71,23 @@ Step 2 — Verify interactive SSH works
 ------------------------------------------------------------
 
 From another system:
-  ssh <username>@<host>
+
+```bash
+# Force password prompt to match scanner behavior
+ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no <username>@<host>
+```
 
 While testing, tail logs:
-  sudo journalctl -fu sshd
-  sudo journalctl -fu sssd
+
+```bash
+# Watch sshd logs during the login attempt
+sudo journalctl -fu sshd
+```
+
+```bash
+# Watch SSSD logs for auth failures or backend issues
+sudo journalctl -fu sssd
+```
 
 Interpretation:
 
@@ -76,10 +100,17 @@ Step 3 — Check SELinux denials involving sshd
 ------------------------------------------------------------
 
 Command:
-  sudo ausearch -m AVC,USER_AVC -ts recent | grep sshd
+
+```bash
+# Look for recent SELinux denials related to sshd
+sudo ausearch -m AVC,USER_AVC -ts recent | grep sshd
+```
 
 Look for:
-  avc: denied { name_connect } comm="sshd"
+
+```
+avc: denied { name_connect } comm="sshd"
+```
 
 Meaning:
 SELinux blocked sshd from contacting external auth (often TACACS).
@@ -103,12 +134,14 @@ Recommended high-level order:
 
 Example structure:
 
+```
 auth required    pam_env.so
 auth required    pam_faildelay.so delay=2000000
 auth sufficient  pam_tacplus.so ...   (if TACACS is used)
 auth sufficient  pam_unix.so try_first_pass
 auth sufficient  pam_sss.so forward_pass use_first_pass
 auth required    pam_deny.so
+```
 
 If TACACS runs first and returns no password, SSSD logs:
   Illegal empty authtok
@@ -120,7 +153,11 @@ Step 5 — Verify sudo escalation (if Qualys uses sudo)
 ------------------------------------------------------------
 
 Command:
-  sudo -l -U <username>
+
+```bash
+# List sudo rules for the scanner account
+sudo -l -U <username>
+```
 
 Expected line:
   (ALL) NOPASSWD: ALL
@@ -133,12 +170,18 @@ Step 6 — Only then consider password expiration
 
 Local /etc/shadow accounts only:
 
-  sudo chage -l <username>
+```bash
+# Check local password aging details
+sudo chage -l <username>
+```
 
 If expired:
 
-  sudo passwd <username>
-  sudo chage -M 90 -W 7 <username>
+```bash
+# Reset the password and align aging policy to the hardened baseline
+sudo passwd <username>
+sudo chage -M 90 -W 7 <username>
+```
 
 Domain (SSSD) accounts are managed in AD — not affected by local shadow aging.
 
@@ -200,7 +243,11 @@ Finding which account Qualys attempted
 
 1) Open the Qualys authentication record — check Login value.
 2) Review sshd logs around the scan:
-   sudo journalctl -u sshd --since -15m
+
+```bash
+# Show recent sshd entries for the last 15 minutes
+sudo journalctl -u sshd --since "15 minutes ago" --no-pager
+```
 
 Logs show the username Qualys attempted.
 
