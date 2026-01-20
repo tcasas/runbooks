@@ -55,16 +55,9 @@ EOF
 # Interactive shells
 cat >> ~/.bashrc <<'EOF'
 
-# --- pyenv ---
-export PYENV_ROOT="$HOME/.pyenv"
-[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init - bash)"
-
 # pyenv-virtualenv
 eval "$(pyenv virtualenv-init -)"
 EOF
-
-source ~/.bashrc
 ```
 
 Note: this shell setup is only needed to install Python versions, create virtualenvs, activate them manually, and do day-to-day development work. systemd services should always use the virtualenv's full Python path and do not rely on pyenv initialization.
