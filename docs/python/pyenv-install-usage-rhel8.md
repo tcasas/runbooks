@@ -40,19 +40,29 @@ sudo dnf -y install \
 curl -fsSL https://pyenv.run | bash
 ```
 
+Optional (turtle-suite): use a dedicated service user so pyenv and venv ownership stay clean and reproducible. Create a user (example: `turtle`), install pyenv under `/home/turtle/.pyenv`, and create the project venv under `/opt/otxapps/turtle-suite/.venv`. systemd should run `/opt/otxapps/turtle-suite/.venv/bin/python` directly, without relying on pyenv initialization.
+
 ### 3. Enable pyenv in shell (bash)
 
 ```bash
-cat >> ~/.bashrc <<'EOF'
+# Login shells
+cat >> ~/.bash_profile <<'EOF'
 
 # --- pyenv ---
 export PYENV_ROOT="$HOME/.pyenv"
-command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init -)"
+[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init - bash)"
 EOF
 
-source ~/.bashrc
+# Interactive shells
+cat >> ~/.bashrc <<'EOF'
+
+# pyenv-virtualenv
+eval "$(pyenv virtualenv-init -)"
+EOF
 ```
+
+Note: this shell setup is only needed to install Python versions, create virtualenvs, activate them manually, and do day-to-day development work. systemd services should always use the virtualenv's full Python path and do not rely on pyenv initialization.
 
 Verify:
 
