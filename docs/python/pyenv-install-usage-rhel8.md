@@ -40,6 +40,8 @@ sudo dnf -y install \
 curl -fsSL https://pyenv.run | bash
 ```
 
+Optional (turtle-suite): use a dedicated service user so pyenv and venv ownership stay clean and reproducible. Create a user (example: `turtle`), install pyenv under `/home/turtle/.pyenv`, and create the project venv under `/opt/otxapps/turtle-suite/.venv`. systemd should run `/opt/otxapps/turtle-suite/.venv/bin/python` directly, without relying on pyenv initialization.
+
 ### 3. Enable pyenv in shell (bash)
 
 ```bash
