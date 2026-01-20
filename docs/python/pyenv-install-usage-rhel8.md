@@ -40,19 +40,72 @@ sudo dnf -y install \
 curl -fsSL https://pyenv.run | bash
 ```
 
+Optional (turtle-suite): use a dedicated service user so pyenv and venv ownership stay clean and reproducible. Create a user (example: `turtle`), install pyenv under `/home/turtle/.pyenv`, and create the project venv under `/opt/otxapps/turtle-suite/.venv`. systemd should run `/opt/otxapps/turtle-suite/.venv/bin/python` directly, without relying on pyenv initialization.
+
+Option A (recommended for production): temporarily enable a shell so you can install pyenv and build the venv.
+
+1. Check the current shell:
+
+   ```bash
+   getent passwd sensor
+   ```
+
+   Example output:
+
+   ```bash
+   sensor:x:995:995::/home/sensor:/sbin/nologin
+   ```
+
+2. Temporarily give it a shell:
+
+   ```bash
+   sudo usermod -s /bin/bash sensor
+   ```
+
+3. Switch to the user:
+
+   ```bash
+   sudo su - sensor
+   ```
+
+   You should now land in `/home/sensor`.
+
+4. Install pyenv and create the venv (as discussed above).
+
+5. Lock it back down after setup:
+
+   ```bash
+   exit
+   sudo usermod -s /sbin/nologin sensor
+   ```
+
+   Verify:
+
+   ```bash
+   getent passwd sensor
+   ```
+
 ### 3. Enable pyenv in shell (bash)
 
 ```bash
-cat >> ~/.bashrc <<'EOF'
+# Login shells
+cat >> ~/.bash_profile <<'EOF'
 
 # --- pyenv ---
 export PYENV_ROOT="$HOME/.pyenv"
-command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init -)"
+[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init - bash)"
 EOF
 
-source ~/.bashrc
+# Interactive shells
+cat >> ~/.bashrc <<'EOF'
+
+# pyenv-virtualenv
+eval "$(pyenv virtualenv-init -)"
+EOF
 ```
+
+Note: this shell setup is only needed to install Python versions, create virtualenvs, activate them manually, and do day-to-day development work. systemd services should always use the virtualenv's full Python path and do not rely on pyenv initialization.
 
 Verify:
 
@@ -72,6 +125,25 @@ pyenv local 3.11.9      # per-project (recommended)
 
 python -V
 which python
+```
+
+Example (turtle-suite):
+
+```bash
+# Install the Python version
+pyenv install 3.11.9
+
+# (optional) verify it exists now
+pyenv versions
+
+# Set per-project version (run inside the project dir)
+cd /opt/otxapps/turtle-suite
+pyenv local 3.11.9
+
+# Confirm what pyenv will use
+pyenv version
+pyenv which python
+python -V
 ```
 
 Expected:
