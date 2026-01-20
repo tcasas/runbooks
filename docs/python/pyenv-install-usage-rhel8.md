@@ -43,12 +43,25 @@ curl -fsSL https://pyenv.run | bash
 ### 3. Enable pyenv in shell (bash)
 
 ```bash
+# Login shells
+cat >> ~/.bash_profile <<'EOF'
+
+# --- pyenv ---
+export PYENV_ROOT="$HOME/.pyenv"
+[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init - bash)"
+EOF
+
+# Interactive shells
 cat >> ~/.bashrc <<'EOF'
 
 # --- pyenv ---
 export PYENV_ROOT="$HOME/.pyenv"
-command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init -)"
+[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init - bash)"
+
+# pyenv-virtualenv
+eval "$(pyenv virtualenv-init -)"
 EOF
 
 source ~/.bashrc
