@@ -67,6 +67,8 @@ EOF
 source ~/.bashrc
 ```
 
+Note: this shell setup is only needed to install Python versions, create virtualenvs, activate them manually, and do day-to-day development work. systemd services should always use the virtualenv's full Python path and do not rely on pyenv initialization.
+
 Verify:
 
 ```bash
